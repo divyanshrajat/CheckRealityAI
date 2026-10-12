@@ -237,9 +237,9 @@ $$
 If any single stream detects manipulation or authenticity with extreme certainty ($p_m > 0.92$ or $p_m < 0.08$), its effective weight $w_m$ is dynamically scaled by **$+25\%$** to let unambiguous forensic cues dominate the decision:
 
 $$
-w_m = w_m^{(0)} \times \begin{cases} 
-1.25 & \text{if } p_m > 0.92 \text{ or } p_m < 0.08 \quad (\text{extreme certainty}) \\[4pt]
-1.00 & \text{otherwise}
+w_m = \begin{cases} 
+1.25 \times w_m^{(0)} & \text{if } p_m > 0.92 \;\lor\; p_m < 0.08 \\
+w_m^{(0)} & \text{otherwise}
 \end{cases}
 $$
 
@@ -254,7 +254,7 @@ The final classification verdict $\hat{Y} \in \{\text{Real}, \text{Fake}\}$ is d
 
 $$
 \hat{Y} = \begin{cases} 
-\text{Fake} & \text{if } \hat{P}_{\text{unified}} > 0.50 \\[4pt]
+\text{Fake} & \text{if } \hat{P}_{\text{unified}} > 0.50 \\
 \text{Real} & \text{if } \hat{P}_{\text{unified}} \le 0.50
 \end{cases}
 $$
