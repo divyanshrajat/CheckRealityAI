@@ -217,44 +217,40 @@ Every model in CheckReality AI is fine-tuned on verified public academic dataset
 
 ### Multimodal Fusion Engine (`ml/fusion/engine.py`)
 
-When evaluating heterogeneous media assets (e.g. video with embedded audio, or synthetic imagery accompanying news text), CheckReality AI executes a **Bayesian Multimodal Decision Fusion Pipeline** grounded in empirical reliability calibration:
+When evaluating multi-stream digital media (e.g., a video containing speech audio, or an article with accompanying images), CheckReality AI fuses predictions using an empirical **Bayesian Multimodal Decision Fusion Pipeline**:
 
-#### 1. Mathematical Formalization & Problem Formulation
-Let $\mathcal{M} \subseteq \{\text{video}, \text{audio}, \text{image}, \text{text}\}$ denote the set of active modalities extracted from the input asset, where $|\mathcal{M}| \ge 1$. For each modality $m \in \mathcal{M}$, let $p_m \in [0, 1]$ represent the posterior manipulation probability produced by its fine-tuned neural backbone $f_m(\mathbf{x}_m)$:
+#### 1. Input Modality Posteriors
+For each active modality $m \in \mathcal{M} \subseteq \{\text{video}, \text{audio}, \text{image}, \text{text}\}$, the dedicated fine-tuned neural backbone outputs a manipulation probability $p_m \in [0, 1]$:
 
 $$
 p_m = P(Y = \text{Fake} \mid \mathbf{x}_m)
 $$
 
 #### 2. Empirical Reliability Priors
-Modalities are assigned base prior weights $w_m^{(0)}$ proportional to their benchmark discriminative capacity across zero-leakage test suites:
+Modalities are assigned base reliability weights $w_m^{(0)}$ proportional to their benchmark discriminative capacity:
 
 $$
-w_m^{(0)} = \begin{cases} 
-0.35 & \text{for } m = \text{video} \\[4pt]
-0.25 & \text{for } m = \text{audio} \\[4pt]
-0.25 & \text{for } m = \text{image} \\[4pt]
-0.15 & \text{for } m = \text{text}
-\end{cases}
+w_{\text{video}}^{(0)} = 0.35, \quad w_{\text{audio}}^{(0)} = 0.25, \quad w_{\text{image}}^{(0)} = 0.25, \quad w_{\text{text}}^{(0)} = 0.15
 $$
 
 #### 3. Dynamic Confidence Scaling
-To account for localized synthesis artifacts (e.g., boundary warping or vocoder anomalies) where an individual stream achieves near-certain discrimination, the effective weight $w_m$ dynamically scales by $+25\%$:
+If any single stream detects manipulation or authenticity with extreme certainty ($p_m > 0.92$ or $p_m < 0.08$), its effective weight $w_m$ is dynamically scaled by **$+25\%$** to let unambiguous forensic cues dominate the decision:
 
 $$
-w_m = w_m^{(0)} \cdot \left(1.0 + 0.25 \cdot \mathbb{I}\left(p_m > 0.92 \;\lor\; p_m < 0.08\right)\right)
+w_m = w_m^{(0)} \times \begin{cases} 
+1.25 & \text{if } p_m > 0.92 \text{ or } p_m < 0.08 \quad (\text{extreme certainty}) \\[4pt]
+1.00 & \text{otherwise}
+\end{cases}
 $$
 
-where $\mathbb{I}(\cdot) \in \{0, 1\}$ is the indicator function.
-
-#### 4. Unified Posterior Expectation & Bayes Decision Rule
-The unified manipulation probability $\hat{P}_{\text{unified}}$ is computed via normalized convex Bayesian expectation:
+#### 4. Unified Posterior Expectation & Verdict
+The unified manipulation score $\hat{P}_{\text{unified}}$ is computed via normalized convex Bayesian expectation:
 
 $$
 \hat{P}_{\text{unified}} = \frac{\sum_{m \in \mathcal{M}} w_m \cdot p_m}{\sum_{m \in \mathcal{M}} w_m}
 $$
 
-The final forensic verdict $\hat{Y} \in \{\text{Real}, \text{Fake}\}$ follows the optimal Bayes decision boundary with threshold $\tau = 0.50$:
+The final classification verdict $\hat{Y} \in \{\text{Real}, \text{Fake}\}$ is determined by the Bayes optimal threshold ($\tau = 0.50$):
 
 $$
 \hat{Y} = \begin{cases} 
@@ -263,27 +259,25 @@ $$
 \end{cases}
 $$
 
-#### 5. Cross-Modal Agreement & Discrepancy Index
-To expose localized attacks (e.g. authentic video footage spliced with cloned/synthesized voice audio), an inter-stream consensus metric $A_{\text{consensus}} \in [0, 1]$ measures statistical divergence across active modalities:
+#### 5. Cross-Modal Agreement Index (Discrepancy Detection)
+To expose **cross-modal attacks** (e.g. authentic video footage spliced with cloned/synthesized speech), an inter-stream consensus score $A_{\text{consensus}} \in [0, 1]$ measures dispersion across modality predictions:
 
 $$
 A_{\text{consensus}} = \max\left(0, \; 1.0 - \frac{\sigma(\{p_m\}_{m \in \mathcal{M}})}{\sigma_{\max}}\right)
 $$
 
-where $\sigma(\{p_m\}_{m \in \mathcal{M}}) = \sqrt{\frac{1}{|\mathcal{M}|} \sum_{m \in \mathcal{M}} (p_m - \bar{p})^2}$ is the standard deviation across modality probabilities, and $\sigma_{\max} = 0.50$ represents the theoretical maximum dispersion for bounded variables $p_m \in [0, 1]$.
+where $\sigma(\{p_m\})$ is the standard deviation across modality probabilities, and $\sigma_{\max} = 0.50$ represents the theoretical maximum dispersion for bounded values in $[0, 1]$. A low consensus score flags targeted replacement attacks.
 
-#### 6. Threat Risk Severity Function
-A composite risk tier $\mathcal{R}(\hat{P}_{\text{unified}}, A_{\text{consensus}}, |\mathcal{M}|)$ categorizes actionable alert severity:
+#### 6. Actionable Risk Severity Classification
+Rather than relying solely on raw probabilities, forensic threat tiers integrate both unified confidence $\hat{P}_{\text{unified}}$ and cross-modal agreement $A_{\text{consensus}}$:
 
-$$
-\mathcal{R} = \begin{cases} 
-\textbf{CRITICAL} & \text{if } \hat{P}_{\text{unified}} \ge 0.80 \\[4pt]
-\textbf{HIGH} & \text{if } 0.60 \le \hat{P}_{\text{unified}} < 0.80 \\[4pt]
-\textbf{HIGH (DISCREPANCY DETECTED)} & \text{if } 0.40 \le \hat{P}_{\text{unified}} < 0.60 \;\land\; |\mathcal{M}| > 1 \;\land\; A_{\text{consensus}} < 0.60 \\[4pt]
-\textbf{MODERATE / SUSPICIOUS} & \text{if } 0.40 \le \hat{P}_{\text{unified}} < 0.60 \\[4pt]
-\textbf{LOW / AUTHENTIC} & \text{if } \hat{P}_{\text{unified}} < 0.40
-\end{cases}
-$$
+| Risk Severity Tier | Unified Score ($\hat{P}_{\text{unified}}$) | Cross-Modal Agreement ($A_{\text{consensus}}$) | Forensic Interpretation |
+| :--- | :---: | :---: | :--- |
+| 🔴 **CRITICAL** | $\ge 80\%$ | Any | High-confidence synthetic manipulation across examined streams |
+| 🟠 **HIGH** | $60\% - 79.9\%$ | Any | Strong manipulation markers detected in primary media |
+| 🟡 **HIGH (DISCREPANCY DETECTED)** | $40\% - 59.9\%$ | $< 0.60$ (with $>1$ stream) | **Cross-modal swap attack** (e.g. authentic video with AI-dubbed voice) |
+| 🔵 **MODERATE / SUSPICIOUS** | $40\% - 59.9\%$ | $\ge 0.60$ | Inconclusive or subtle artifacts; recommended for manual review |
+| 🟢 **LOW / AUTHENTIC** | $< 40\%$ | Any | Consistent authentic biometric & semantic characteristics |
 
 ### Explainable AI (XAI) Suite (`ml/xai/engine.py`)
 
