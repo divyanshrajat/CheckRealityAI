@@ -219,15 +219,40 @@ Every model in CheckReality AI is fine-tuned on verified public academic dataset
 
 When analyzing multimedia files (e.g. an MP4 video with embedded audio, or an article containing images and text), CheckReality AI executes a **Bayesian fusion pipeline**:
 
-1. **Empirical Reliability Weighting**: Modalities are weighted proportional to their empirical discriminative capacity:
-   $$\text{Weight}_{\text{video}} = 0.35, \quad \text{Weight}_{\text{audio}} = 0.25, \quad \text{Weight}_{\text{image}} = 0.25, \quad \text{Weight}_{\text{text}} = 0.15$$
-   If any visual or acoustic stream detects manipulation with extreme certainty ($>0.92$), its weighting dynamically scales by $+25\%$.
-2. **Cross-Modal Agreement Index**: Quantifies inter-stream consensus ($0.0 \to 1.0$). A low agreement score combined with high audio spoof probability flags an audio-dubbed deepfake where authentic video was matched with synthesized speech.
-3. **Risk Severity Index**:
-   - `CRITICAL`: Multiple modalities show manipulation $>85\%$, or cross-modal mismatch indicates speech replacement.
-   - `HIGH`: Primary modality probability $>60\%$.
-   - `MODERATE / SUSPICIOUS`: Probability between $40\%$ and $60\%$.
-   - `LOW / AUTHENTIC`: Probability $<40\%$.
+1. **Empirical Reliability Weighting & Dynamic Confidence Scaling**: Modalities are assigned base prior weights proportional to their benchmark discriminative capacity:
+
+   $$W_{\text{base}}(m) = \begin{cases} 
+   0.35 & \text{if } m = \text{video} \\
+   0.25 & \text{if } m = \text{audio} \\
+   0.25 & \text{if } m = \text{image} \\
+   0.15 & \text{if } m = \text{text}
+   \end{cases}$$
+
+   If any visual or acoustic stream detects manipulation or authenticity with extreme certainty ($p_m > 0.92$ or $p_m < 0.08$), its weighting dynamically scales by $+25\%$:
+
+   $$w_m = \begin{cases} 
+   1.25 \times W_{\text{base}}(m) & \text{if } p_m > 0.92 \;\lor\; p_m < 0.08 \\
+   W_{\text{base}}(m) & \text{otherwise}
+   \end{cases}$$
+
+   The **Unified Manipulation Probability** ($\hat{P}_{\text{unified}}$) is computed via normalized Bayesian weighted expectation:
+
+   $$\hat{P}_{\text{unified}} = \frac{\sum_{m \in M} w_m \cdot p_m}{\sum_{m \in M} w_m}$$
+
+2. **Cross-Modal Agreement Index**: Quantifies inter-stream consensus ($0.0 \to 1.0$) against localized attacks (e.g. authentic video combined with synthetic voice replacement):
+
+   $$A_{\text{consensus}} = \max\left(0, \; 1.0 - \frac{\sigma(\{p_m\}_{m \in M})}{0.5}\right)$$
+
+   where $\sigma(\{p_m\})$ is the standard deviation across active modality scores (normalized by maximum possible $\sigma_{\max} = 0.5$ for $p_m \in [0, 1]$).
+
+3. **Risk Severity Mapping**:
+   $$\text{Risk Tier} = \begin{cases} 
+   \textbf{CRITICAL} & \text{if } \hat{P}_{\text{unified}} \ge 0.80 \\
+   \textbf{HIGH} & \text{if } 0.60 \le \hat{P}_{\text{unified}} < 0.80 \\
+   \textbf{HIGH (DISCREPANCY DETECTED)} & \text{if } 0.40 \le \hat{P}_{\text{unified}} < 0.60 \text{ and } |M| > 1 \text{ and } A_{\text{consensus}} < 0.60 \\
+   \textbf{MODERATE / SUSPICIOUS} & \text{if } 0.40 \le \hat{P}_{\text{unified}} < 0.60 \\
+   \textbf{LOW / AUTHENTIC} & \text{if } \hat{P}_{\text{unified}} < 0.40
+   \end{cases}$$
 
 ### Explainable AI (XAI) Suite (`ml/xai/engine.py`)
 
