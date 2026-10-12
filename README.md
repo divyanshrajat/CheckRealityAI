@@ -238,7 +238,7 @@ If any single stream detects manipulation or authenticity with extreme certainty
 
 $$
 w_m = \begin{cases} 
-1.25 \times w_m^{(0)} & \text{if } p_m > 0.92 \;\lor\; p_m < 0.08 \\
+1.25 \times w_m^{(0)} & \text{if } p_m > 0.92 \text{ or } p_m < 0.08 \\
 w_m^{(0)} & \text{otherwise}
 \end{cases}
 $$
@@ -263,15 +263,15 @@ $$
 To expose **cross-modal attacks** (e.g. authentic video footage spliced with cloned/synthesized speech), an inter-stream consensus score $A_{\text{consensus}} \in [0, 1]$ measures dispersion across modality predictions:
 
 $$
-A_{\text{consensus}} = \max\left(0, \; 1.0 - \frac{\sigma(\{p_m\}_{m \in \mathcal{M}})}{\sigma_{\max}}\right)
+A_{\text{consensus}} = \max\left(0, 1.0 - \frac{\sigma(\{p_m\}_{m \in \mathcal{M}})}{\sigma_{\max}}\right)
 $$
 
 where $\sigma(\{p_m\})$ is the standard deviation across modality probabilities, and $\sigma_{\max} = 0.50$ represents the theoretical maximum dispersion for bounded values in $[0, 1]$. A low consensus score flags targeted replacement attacks.
 
 #### 6. Actionable Risk Severity Classification
-Rather than relying solely on raw probabilities, forensic threat tiers integrate both unified confidence $\hat{P}_{\text{unified}}$ and cross-modal agreement $A_{\text{consensus}}$:
+Rather than relying solely on raw probabilities, forensic threat tiers integrate both the **Unified Manipulation Score** and the **Cross-Modal Agreement Index**:
 
-| Risk Severity Tier | Unified Score ($\hat{P}_{\text{unified}}$) | Cross-Modal Agreement ($A_{\text{consensus}}$) | Forensic Interpretation |
+| Risk Severity Tier | Unified Manipulation Score | Cross-Modal Agreement | Forensic Interpretation |
 | :--- | :---: | :---: | :--- |
 | 🔴 **CRITICAL** | $\ge 80\%$ | Any | High-confidence synthetic manipulation across examined streams |
 | 🟠 **HIGH** | $60\% - 79.9\%$ | Any | Strong manipulation markers detected in primary media |
