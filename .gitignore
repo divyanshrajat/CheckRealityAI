@@ -19,11 +19,9 @@ ENV/
 .env
 *.env
 
-# AI Model Weights (large binary weights > 40MB - train/download locally)
-*.pth
+# Intermediate checkpoints & temporary weights
 *.pt
 *.bin
-*.safetensors
 *.ckpt
 
 # Datasets (45GB+ raw datasets - not tracked in Git)
