@@ -1,0 +1,20 @@
+{
+    "experiment_id": "7d3d0b39-d7c2-4426-8bce-5ad940de0afe",
+    "date": "2026-10-06T12:41:55.870672",
+    "model": "3d-resnet-18",
+    "dataset": "FaceForensics++",
+    "subset_size": 600,
+    "seed": 42,
+    "epochs": 5,
+    "gpu": "NVIDIA GeForce GTX 1650",
+    "training_time_seconds": 5427.74,
+    "validation_metrics": {
+        "accuracy": 0.475,
+        "precision": 0.32142857142857145,
+        "recall": 0.16981132075471697,
+        "f1": 0.2222222222222222,
+        "roc_auc": 0.4885947620388623,
+        "fpr": 0.2835820895522388,
+        "fnr": 0.8301886792452831
+    }
+}

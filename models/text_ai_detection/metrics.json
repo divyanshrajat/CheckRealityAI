@@ -1,0 +1,21 @@
+{
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "roc_auc": 1.0,
+    "fpr": 0.0,
+    "fnr": 0.0,
+    "model_name": "roberta_base_ai_text",
+    "version": "2.0-finetuned-sanitized",
+    "dataset": "AI vs Human Text Dataset (Sanitized, No Leakage)",
+    "training_samples": 4000,
+    "validation_samples": 983,
+    "classes": [
+        "human",
+        "ai"
+    ],
+    "seed": 42,
+    "gpu": "cuda",
+    "last_updated": "2026-10-12 22:14:19"
+}

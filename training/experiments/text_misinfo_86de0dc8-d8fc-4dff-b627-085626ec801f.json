@@ -1,0 +1,22 @@
+{
+    "experiment_id": "86de0dc8-d8fc-4dff-b627-085626ec801f",
+    "date": "2026-10-12T18:49:56.768355",
+    "model": "roberta-base",
+    "dataset": "Fake & Real News",
+    "subset_size": 10000,
+    "seed": 42,
+    "learning_rate": "2e-5",
+    "batch_size": 16,
+    "epochs": 3,
+    "gpu": "NVIDIA GeForce GTX 1650",
+    "training_time_seconds": 6653.5,
+    "validation_metrics": {
+        "accuracy": 0.9995,
+        "precision": 0.9989806320081549,
+        "recall": 1.0,
+        "f1": 0.9994900560938297,
+        "roc_auc": 0.9998694477791117,
+        "fpr": 0.000980392156862745,
+        "fnr": 0.0
+    }
+}

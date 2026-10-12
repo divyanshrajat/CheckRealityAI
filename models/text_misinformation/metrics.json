@@ -1,0 +1,21 @@
+{
+    "accuracy": 0.9995,
+    "precision": 0.9989806320081549,
+    "recall": 1.0,
+    "f1": 0.9994900560938297,
+    "roc_auc": 0.9999979991996798,
+    "fpr": 0.000980392156862745,
+    "fnr": 0.0,
+    "model_name": "roberta_base_misinformation",
+    "version": "2.0-finetuned-sanitized",
+    "dataset": "Fake & Real News Dataset (Sanitized, No Leakage)",
+    "training_samples": 8000,
+    "validation_samples": 2000,
+    "classes": [
+        "real",
+        "fake"
+    ],
+    "seed": 42,
+    "gpu": "cuda",
+    "last_updated": "2026-10-12 18:02:12"
+}

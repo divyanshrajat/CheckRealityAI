@@ -1,0 +1,18 @@
+{
+    "experiment_id": "4d624d96-5246-4cf0-97c2-f536097234da",
+    "date": "2026-10-06T23:32:12.881292",
+    "model": "pretrained-resnet18-audio",
+    "dataset": "ASVspoof",
+    "subset_size": 25000,
+    "seed": 42,
+    "epochs": 5,
+    "gpu": "NVIDIA GeForce GTX 1650",
+    "training_time_seconds": 2508.21,
+    "validation_metrics": {
+        "accuracy": 0.4864,
+        "precision": 0.4884929472902747,
+        "recall": 0.5251396648044693,
+        "f1": 0.5061538461538462,
+        "roc_auc": 0.4878646501003846
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "experiment_id": "b9f9ada5-35ac-4e1a-a9f8-c50aacf27ea8",
+    "date": "2026-10-12T14:19:44.632821",
+    "model": "efficientnet_b3_deepfake",
+    "dataset": "140k Real and Fake Faces",
+    "subset_size": 5000,
+    "training_samples": 4000,
+    "validation_samples": 1000,
+    "seed": 42,
+    "epochs": 8,
+    "gpu": "NVIDIA GeForce GTX 1650",
+    "training_time_seconds": 4782.1,
+    "validation_metrics": {
+        "accuracy": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "roc_auc": 0.5,
+        "fpr": 0.0,
+        "fnr": 1.0
+    }
+}

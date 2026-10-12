@@ -1,0 +1,30 @@
+{
+    "experiment_id": "89d46063-24c1-40c2-8f46-b3aa04019687",
+    "date": "2026-10-06T13:18:45.180413",
+    "model": "audio-cnn",
+    "dataset": "ASVspoof",
+    "subset_size": 15000,
+    "seed": 42,
+    "epochs": 5,
+    "gpu": "NVIDIA GeForce GTX 1650",
+    "training_time_seconds": 464.11,
+    "validation_metrics": {
+        "accuracy": 0.502,
+        "precision": 0.502,
+        "recall": 1.0,
+        "f1": 0.6684420772303595,
+        "roc_auc": 0.4965455002835601,
+        "fpr": 1.0,
+        "fnr": 0.0,
+        "model_name": "audio_spoof_cnn",
+        "version": "0.1-development",
+        "dataset": "ASVspoof 2019",
+        "training_samples": 12000,
+        "classes": [
+            "bonafide",
+            "spoof"
+        ],
+        "seed": 42,
+        "gpu": "cuda"
+    }
+}

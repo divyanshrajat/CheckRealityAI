@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  checkreality-frontend:
+    build: ./frontend
+    container_name: checkreality-frontend-v2
+    ports:
+      - "5173:5173"
+    networks:
+      - checkreality-net
+    restart: unless-stopped
+
+  checkreality-backend:
+    build: ./backend
+    container_name: checkreality-backend-v2
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    networks:
+      - checkreality-net
+    depends_on:
+      - checkreality-mongodb
+      - checkreality-redis
+    restart: unless-stopped
+
+  checkreality-worker:
+    build: ./backend
+    command: celery -A worker.celery_app worker --loglevel=info
+    container_name: checkreality-worker-v2
+    env_file:
+      - .env
+    networks:
+      - checkreality-net
+    depends_on:
+      - checkreality-redis
+      - checkreality-mongodb
+    volumes:
+      - checkreality-uploads-v2:/uploads
+    restart: unless-stopped
+
+  checkreality-mongodb:
+    image: mongo:6.0
+    container_name: checkreality-mongodb-v2
+    ports:
+      - "27019:27017"
+    volumes:
+      - checkreality-mongodb-data-v2:/data/db
+    networks:
+      - checkreality-net
+    restart: unless-stopped
+
+  checkreality-redis:
+    image: redis:7-alpine
+    container_name: checkreality-redis-v2
+    ports:
+      - "6381:6379"
+    volumes:
+      - checkreality-redis-data-v2:/data
+    networks:
+      - checkreality-net
+    restart: unless-stopped
+
+networks:
+  checkreality-net:
+    driver: bridge
+
+volumes:
+  checkreality-mongodb-data-v2:
+  checkreality-redis-data-v2:
+  checkreality-uploads-v2:

@@ -1,0 +1,22 @@
+{
+    "experiment_id": "6f16cdb5-ee53-4e5c-9e8c-4c1cea615ef4",
+    "date": "2026-10-06T00:35:14.737782",
+    "model": "roberta-base",
+    "dataset": "AI vs Human Text",
+    "subset_size": 1000,
+    "seed": 42,
+    "learning_rate": "2e-5",
+    "batch_size": 16,
+    "epochs": 4,
+    "gpu": "NVIDIA GeForce GTX 1650",
+    "training_time_seconds": 799.82,
+    "validation_metrics": {
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "roc_auc": 1.0,
+        "fpr": 0.0,
+        "fnr": 0.0
+    }
+}

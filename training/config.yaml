@@ -1,0 +1,80 @@
+seed: 42
+
+dataset_paths:
+  text_misinformation:
+    "fake": "Datasets/text/Fake.csv"
+    "true": "Datasets/text/True.csv"
+  text_ai: "Datasets/text/ai_vs_human_text.csv"
+  image: "Datasets/image/train.csv"
+  video: "Datasets/video/FaceForensics++_C23"
+  audio: "Datasets/audio"
+
+subset_sizes:
+  text_misinformation: 10000
+  text_ai: 5000
+  image: 10000
+  video: 100
+  audio: 5000
+
+splits:
+  train_ratio: 0.8
+  val_ratio: 0.2
+  test_ratio: 0.0 # Keeping test sets isolated/untouched where applicable
+
+training_params:
+  # Text Misinformation
+  text_misinformation:
+    batch_size: 16
+    learning_rate: 2e-5
+    epochs: 3
+    max_length: 128
+    mixed_precision: true
+    gradient_accumulation_steps: 2
+  
+  # Text AI vs Human
+  text_ai:
+    batch_size: 16
+    learning_rate: 2e-5
+    epochs: 4
+    max_length: 128
+    mixed_precision: true
+    gradient_accumulation_steps: 2
+    
+  # Image (EfficientNet-B3)
+  image:
+    batch_size: 16
+    learning_rate_phase1: 1e-3
+    learning_rate_phase2: 1e-4
+    epochs_phase1: 2
+    epochs_phase2: 4
+    image_size: 224
+    mixed_precision: false
+    
+  # Video (EfficientNet + LSTM / 3D CNN)
+  video:
+    batch_size: 4
+    learning_rate: 1e-4
+    epochs: 10
+    num_frames: 16
+    frame_interval: 2
+    image_size: 224
+    mixed_precision: true
+    
+  audio:
+    batch_size: 32
+    learning_rate: 1e-4
+    epochs: 15
+    sample_rate: 16000
+    duration_seconds: 5
+    mixed_precision: true
+
+hardware:
+  num_workers: 2 # Conservative for 4GB VRAM and avoiding CPU bottleneck
+  use_gpu: true
+
+model_save_paths:
+  text_misinformation: "models/text_misinformation"
+  text_ai: "models/text_ai_detection"
+  image: "models/image_deepfake"
+  video: "models/video_deepfake"
+  audio: "models/audio_spoof"

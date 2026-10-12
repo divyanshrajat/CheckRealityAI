@@ -1,0 +1,22 @@
+{
+    "experiment_id": "7a12fcb4-9ac8-45aa-8981-96bcc4e35b27",
+    "date": "2026-10-12T12:37:29.444791",
+    "model": "pretrained_resnet18_audio",
+    "dataset": "ASVspoof 2019 LA",
+    "subset_size": 3000,
+    "training_samples": 2400,
+    "validation_samples": 600,
+    "seed": 42,
+    "epochs": 15,
+    "gpu": "NVIDIA GeForce GTX 1650",
+    "training_time_seconds": 164.14,
+    "validation_metrics": {
+        "accuracy": 0.9616666666666667,
+        "precision": 0.9453376205787781,
+        "recall": 0.98,
+        "f1": 0.9623567921440261,
+        "roc_auc": 0.9954222222222222,
+        "fpr": 0.056666666666666664,
+        "fnr": 0.02
+    }
+}

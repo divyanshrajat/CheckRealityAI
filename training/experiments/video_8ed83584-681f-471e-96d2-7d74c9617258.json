@@ -1,0 +1,29 @@
+{
+    "experiment_id": "8ed83584-681f-471e-96d2-7d74c9617258",
+    "date": "2026-10-12T23:12:42.594680",
+    "model": "efficientnet_b0_lstm",
+    "dataset": "FaceForensics++",
+    "training_samples": 320,
+    "validation_samples": 80,
+    "validation_metrics": {
+        "accuracy": 0.9375,
+        "precision": 0.9069767441860465,
+        "recall": 0.975,
+        "f1": 0.9397590361445783,
+        "roc_auc": 0.9075000000000001,
+        "fpr": 0.1,
+        "fnr": 0.025,
+        "model_name": "efficientnet_lstm_video",
+        "version": "2.0-finetuned-temporal",
+        "dataset": "FaceForensics++ (Clean, Balanced)",
+        "training_samples": 320,
+        "validation_samples": 80,
+        "classes": [
+            "real",
+            "fake"
+        ],
+        "seed": 42,
+        "gpu": "cuda",
+        "last_updated": "2026-10-12 23:12:42"
+    }
+}

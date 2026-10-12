@@ -1,0 +1,30 @@
+{
+    "experiment_id": "d3f37a64-1990-47f4-82d4-70aa5b6cbaf0",
+    "date": "2026-10-06T00:49:22.757815",
+    "model": "efficientnet-b3",
+    "dataset": "140k Faces",
+    "subset_size": 5000,
+    "seed": 42,
+    "epochs": 5,
+    "gpu": "NVIDIA GeForce GTX 1650",
+    "training_time_seconds": 333.83,
+    "validation_metrics": {
+        "accuracy": 1.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "roc_auc": NaN,
+        "fpr": 0.0,
+        "fnr": 0.0,
+        "model_name": "efficientnet_b3_deepfake",
+        "version": "0.1-development",
+        "dataset": "140k Real and Fake Faces",
+        "training_samples": 4000,
+        "classes": [
+            "real",
+            "fake"
+        ],
+        "seed": 42,
+        "gpu": "cuda"
+    }
+}

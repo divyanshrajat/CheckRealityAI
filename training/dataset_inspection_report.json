@@ -1,0 +1,78 @@
+{
+    "text": {
+        "misinformation": {
+            "fake_samples": 23481,
+            "true_samples": 21417,
+            "total_samples": 44898,
+            "columns": [
+                "title",
+                "text",
+                "subject",
+                "date"
+            ],
+            "file_sizes_mb": {
+                "fake": 59.8810920715332,
+                "true": 51.10067367553711
+            }
+        },
+        "ai_vs_human": {
+            "total_samples": 1000,
+            "columns": [
+                "id",
+                "text",
+                "label",
+                "prompt",
+                "model",
+                "date"
+            ],
+            "file_size_mb": 0.21370506286621094,
+            "class_distribution": {
+                "AI-generated": 507,
+                "Human-written": 493
+            }
+        }
+    },
+    "image": {},
+    "video": {
+        "total_videos": 7000,
+        "formats": [
+            ".mp4"
+        ],
+        "sample_details": [
+            {
+                "file": "01_02__meeting_serious__YVGY8LOK.mp4",
+                "fps": 24.0,
+                "resolution": "1920x1080",
+                "duration_sec": 43.5
+            },
+            {
+                "file": "01_02__outside_talking_still_laughing__YVGY8LOK.mp4",
+                "fps": 24.0,
+                "resolution": "1920x1080",
+                "duration_sec": 30.29
+            },
+            {
+                "file": "01_02__talking_against_wall__YVGY8LOK.mp4",
+                "fps": 24.0,
+                "resolution": "1920x1080",
+                "duration_sec": 35.04
+            },
+            {
+                "file": "01_02__walking_down_indoor_hall_disgust__YVGY8LOK.mp4",
+                "fps": 24.0,
+                "resolution": "1920x1080",
+                "duration_sec": 32.21
+            },
+            {
+                "file": "01_02__walk_down_hall_angry__YVGY8LOK.mp4",
+                "fps": 24.0,
+                "resolution": "1920x1080",
+                "duration_sec": 9.04
+            }
+        ]
+    },
+    "audio": {
+        "total_files": 363355,
+        "sample_details": []
+    }
+}
