@@ -58,10 +58,15 @@ export default function History() {
                   {sub.status.toUpperCase()}
                 </div>
                 
-                <div className="flex items-center gap-2">
-                  <Link to={`/report/${sub._id}`} className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors flex items-center justify-center" title="View Report">
-                    <span className="material-symbols-outlined">visibility</span>
+                <div className="flex items-center gap-1.5">
+                  <Link to={`/report/${sub._id}`} className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors flex items-center justify-center" title="View Detailed Report">
+                    <span className="material-symbols-outlined text-[20px]">visibility</span>
                   </Link>
+                  {sub.status === 'completed' && (
+                    <Link to={`/report/${sub._id}?view=certificate`} target="_blank" rel="noopener noreferrer" className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-full transition-colors flex items-center justify-center" title="View Official Forensic Certificate">
+                      <span className="material-symbols-outlined text-[20px]">verified</span>
+                    </Link>
+                  )}
                   <button 
                     onClick={async (e) => {
                       e.preventDefault();

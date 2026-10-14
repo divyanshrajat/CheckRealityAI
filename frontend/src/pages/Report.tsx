@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { submissionsService } from '../api/submissions';
 import { ForensicMediaPlayer } from '../components/ForensicMediaPlayer';
 import { PrintableForensicReport } from '../components/PrintableForensicReport';
+import { downloadCertificatePdf } from '../utils/pdfExport';
 
 export default function Report() {
   const { id } = useParams();
@@ -11,6 +12,19 @@ export default function Report() {
   const [report, setReport] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    setIsDownloading(true);
+    try {
+      await downloadCertificatePdf('printable-forensic-report', `CheckRealityAI_Certificate_${id}.pdf`);
+    } catch (e) {
+      console.error('Download failed, using print fallback', e);
+      window.print();
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -79,12 +93,15 @@ export default function Report() {
               </button>
               <button 
                 type="button"
-                onClick={() => window.print()} 
-                className="flex items-center gap-2 px-3.5 py-1 bg-primary text-on-primary rounded-full hover:bg-electric-blue-hover transition-colors font-bold text-sm shadow-[0_2px_8px_rgba(0,102,255,0.25)]" 
-                title="Download Single-Page PDF Report"
+                onClick={handleDownloadPdf}
+                disabled={isDownloading}
+                className="flex items-center gap-2 px-3.5 py-1 bg-primary text-on-primary rounded-full hover:bg-electric-blue-hover transition-colors font-bold text-sm shadow-[0_2px_8px_rgba(0,102,255,0.25)] disabled:opacity-60 cursor-pointer" 
+                title="Download Single-Page PDF Report Directly"
               >
-                <span className="material-symbols-outlined text-[16px]">download</span>
-                Download PDF
+                <span className={`material-symbols-outlined text-[16px] ${isDownloading ? 'animate-spin' : ''}`}>
+                  {isDownloading ? 'sync' : 'download'}
+                </span>
+                {isDownloading ? 'Generating PDF...' : 'Download PDF'}
               </button>
             </div>
           </section>
@@ -262,11 +279,24 @@ export default function Report() {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
+                  onClick={handleDownloadPdf}
+                  disabled={isDownloading}
+                  className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-on-primary font-bold text-xs rounded-full hover:bg-electric-blue-hover transition-colors shadow-sm disabled:opacity-60 cursor-pointer"
+                  title="Download Certificate PDF Directly"
+                >
+                  <span className={`material-symbols-outlined text-sm ${isDownloading ? 'animate-spin' : ''}`}>
+                    {isDownloading ? 'sync' : 'download'}
+                  </span>
+                  {isDownloading ? 'Downloading...' : 'Download PDF'}
+                </button>
+                <button
+                  type="button"
                   onClick={() => window.print()}
-                  className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-on-primary font-bold text-xs rounded-full hover:bg-electric-blue-hover transition-colors shadow-sm"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 bg-surface-container-low text-on-surface font-bold text-xs rounded-full hover:bg-surface-container transition-colors border border-outline/20 cursor-pointer"
+                  title="Open Print Dialog"
                 >
                   <span className="material-symbols-outlined text-sm">print</span>
-                  Print / Save PDF
+                  Print
                 </button>
                 <button
                   type="button"
