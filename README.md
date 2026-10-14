@@ -22,6 +22,8 @@ B.Tech Major Project (2026) · Developed by **Divyansh Rajat** (Roll No. 2300358
 5. [Running the Application](#5-running-the-application)
 6. [API Specification & Ingestion Workflows](#6-api-specification--ingestion-workflows)
 7. [Forensic Authenticity Report & Interactive UI](#7-forensic-authenticity-report--interactive-ui)
+   - [Interactive Forensic Dashboard](#71-interactive-forensic-dashboard-reporttsx)
+   - [Official Single-Page A4 Forensic Audit Certificate](#72-official-single-page-a4-forensic-audit-certificate-printableforensicreporttsx)
 8. [Security, Evidence Integrity & Privacy Model](#8-security-evidence-integrity--privacy-model)
 9. [Verification, Testing & Integration Suite](#9-verification-testing--integration-suite)
 10. [Current Status, Limitations & Out of Scope](#10-current-status-limitations--out-of-scope)
@@ -131,7 +133,7 @@ CheckRealityAI/
 ├── frontend/                 # Forensic Studio Web Application
 │   ├── src/
 │   │   ├── api/              # Axios HTTP client & API route definitions
-│   │   ├── components/       # Reusable UI primitives (ForensicMediaPlayer, ProtectedRoute)
+│   │   ├── components/       # Reusable UI primitives (ForensicMediaPlayer, PrintableForensicReport, ProtectedRoute)
 │   │   ├── context/          # React AuthContext session & JWT state management
 │   │   ├── pages/            # Viewports (Landing, Upload, Report, History, Transparency)
 │   │   ├── App.tsx           # Client router & navigation root
@@ -450,16 +452,72 @@ curl -X GET "http://localhost:8001/uploads/{filename}" \
 
 ## 7. Forensic Authenticity Report & Interactive UI
 
-The React 18 user interface is built around high-density forensic analysis:
+CheckReality AI provides a dual-layer reporting architecture: a high-density, real-time **Interactive Web Dashboard** for live analytical deep-dives, and an **Official Single-Page A4 Forensic Audit Certificate** engineered for tamper-evident offline documentation, executive briefing, and legal chain-of-custody review.
 
-1. **Forensic Verdict Card**: Displays unified status (`REAL` or `FAKE`), confidence percentage, dynamic Risk Tier (`LOW`, `MODERATE`, `HIGH`, `CRITICAL`), and Cross-Modal Agreement score.
-2. **Forensic Media Player (`ForensicMediaPlayer.tsx`)**: High-fidelity HTML5 video & audio player with active sound preservation (`muted = false`, 100% initial volume), real-time acoustic stream detection (`• Audio Track Active (Sound Enabled)`), manual volume sliders, one-click browser policy unmute recovery, and HTTP 206 Range seeking.
-3. **Forensic Synthesis Engine**: Plain-language synthesis explaining why the model reached its decision.
-4. **Multi-Modal Breakdown Grid**: Displays per-modality confidence bars for Video, Audio, Image, and Text.
-5. **Visual Grad-CAM Viewer**: Interactive side-by-side display of original media and the colored thermal activation heatmap with detected anomaly coordinates.
-6. **Acoustic Timeline Inspector**: Displays localized millisecond distortion windows where phase anomalies or vocoder glitches occurred.
-7. **Token Saliency Highlighting**: Color-codes influential words that triggered misinformation or synthetic text classifiers.
-8. **One-Click PDF Export**: Uses client-side print stylesheets (`window.print()`) to generate clean, printable forensic audit reports.
+---
+
+### 7.1 Interactive Forensic Dashboard (`Report.tsx`)
+
+The React 18 user interface is built around high-density forensic analysis and instant visual-acoustic playback:
+
+1. **Forensic Verdict Card**: Displays the unified Bayesian credibility verdict (`REAL` or `FAKE`), calibrated manipulation probability percentage, dynamic Risk Severity Tier (`LOW`, `MODERATE`, `HIGH`, `CRITICAL`), and Cross-Modal Agreement score.
+2. **Zero-Silence Forensic Media Player (`ForensicMediaPlayer.tsx`)**:
+   - High-fidelity HTML5 video & audio player with active sound preservation (`muted = false`, 100% initial volume).
+   - Real-time acoustic stream telemetry (`• Audio Track Active (Sound Enabled)`).
+   - Manual volume sliders, full-screen playback, and one-click browser autoplay policy unmute recovery.
+   - Powered by backend **HTTP 206 Partial Content byte-range streaming** for instantaneous timeline scrubbing and synchronized visual-acoustic alignment.
+3. **Forensic Synthesis Engine**: Generates human-interpretable forensic commentary summarizing cross-stream agreements or divergence (e.g. highlighting face-swapped visuals spliced onto authentic audio).
+4. **Multimodal Probability Breakdown Grid**: Displays individual discriminative scores across Video, Audio, Image, and Text streams with calibrated visual progress indicators.
+5. **Interactive Explainable AI (XAI) Suite**:
+   - **Visual Grad-CAM Viewer**: Interactive side-by-side inspection comparing original video frames/images against gradient-weighted class activation heatmaps (`features[-1]`), revealing synthetic blending seams around facial landmarks.
+   - **Acoustic Timeline Inspector**: Millisecond-level temporal distortion windows highlighting phase anomalies, synthetic vocoder glitches, and artificial spectral cutoffs.
+   - **Token Saliency Highlighting**: Gradient-based token attribution highlighting lexical patterns driving misinformation and synthetic text classification.
+6. **In-Browser Certificate Preview Modal (`Preview PDF`)**: Inspect the exact rendered A4 certificate within a full-screen modal before printing or archiving.
+
+---
+
+### 7.2 Official Single-Page A4 Forensic Audit Certificate (`PrintableForensicReport.tsx`)
+
+To satisfy rigorous digital evidence and academic submission standards, CheckReality AI includes an institutional-grade, downloadable forensic certificate designed specifically to fit on a **single standard A4 page** with zero spillover:
+
+```text
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│ [Logo] CHECKREALITY AI              DIGITAL EVIDENCE AUDIT CERTIFICATE  [CERT-6ACF8A12]│
+│        BBSBEC · CSE DEPT.           Unified Multimodal Forensic Verification Engine     │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ INSTITUTIONAL PROVENANCE & ISSUING AUTHORITY                                           │
+│ Institution : Dept. of Computer Science & Engineering, BBSBEC (IKGPTU)                 │
+│ Lead Dev    : Divyansh Rajat (Roll No. 2300358)                                         │
+│ Supervisor  : Dr. Manpreet Kaur (Associate Professor, CSE)                              │
+│ Core System : Bayesian Multimodal Fusion & Zero-Trust Forensic Verification Engine     │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ EVIDENCE PAYLOAD & CHAIN OF CUSTODY                                                    │
+│ File: sample.mp4 │ Evaluated: 2026-10-14 │ Streams: VIDEO, AUDIO │ Hash: 8f4a...e12b    │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ FORENSIC VERDICT & THREAT SEVERITY                                                     │
+│ [ MANIPULATION DETECTED (DEEPFAKE) ]   CONFIDENCE: 98.4%   RISK: CRITICAL   AGR: 0.94  │
+│ Synthesis: Discrepancy detected across spatial blending and acoustic pitch contours.   │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ CROSS-MODAL PROBABILITY MATRIX                 XAI LOCALIZATION & ARTIFACT METRICS     │
+│ Video (B0+LSTM) : [██████████████████] 97.8%  • Spatial Frame Blending Anomalies       │
+│ Audio (ResNet)  : [██████████████████] 99.2%  • Mel Acoustic Pitch Discontinuities     │
+│ Image (EffNet)  : [------------------]  0.0%  • [ Grad-CAM Frame Saliency Preview ]    │
+│ Text (RoBERTa)  : [------------------]  0.0%                                           │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ [ SEAL ]  VERIFIED AUDIT EVIDENCE DISCLAIMER                                           │
+│ Lead Investigator: Divyansh Rajat (2300358)    Supervisor: Dr. Manpreet Kaur (BBSBEC)  │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### Key Engineering Features of the Certificate:
+- **Strict Single-Page A4 Layout**: Tailored `@media print` styling (`@page { size: A4 portrait; margin: 8mm 10mm; }`) with `page-break-inside: avoid;` and compact typography ensures the entire certificate prints cleanly onto **exactly 1 page** without trailing blank sheets.
+- **Institutional Provenance & Attribution**: Prominently documents Baba Banda Singh Bahadur Engineering College (BBSBEC), the Department of Computer Science & Engineering, Lead Investigator **Divyansh Rajat** (Roll No. 2300358), and Project Supervisor **Dr. Manpreet Kaur**.
+- **Cryptographic Chain of Custody**: Embeds SHA-256 cryptographic media digest, submission UUID, and timestamp for evidentiary audit integrity.
+- **Authoritative Threat Tiering & Verdict**: Visual status badges for high-confidence deepfakes vs. verified authentic media with dynamic color coding (Crimson for Critical Risk, Emerald for Authentic).
+- **Embedded XAI Grad-CAM Thumbnail**: Directly includes the localized Grad-CAM activation frame inside the printed document for immediate visual reference.
+- **Dual Verification Seals & Signatures**: Features formal sign-off blocks for both the Lead Investigator and Project Guide alongside a circular tamper-evident institutional verification seal.
+- **Client-Side Print & PDF Trigger**: Accessible via the **Download PDF** button (`window.print()`), automatically stripping out screen-only navigation, web chrome, and video players.
+
 
 ---
 
