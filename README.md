@@ -478,36 +478,27 @@ The React 18 user interface is built around high-density forensic analysis and i
 
 ### 7.2 Official Single-Page A4 Forensic Audit Certificate (`PrintableForensicReport.tsx`)
 
-To satisfy rigorous digital evidence and academic submission standards, CheckReality AI includes an institutional-grade, downloadable forensic certificate designed specifically to fit on a **single standard A4 page** with zero spillover:
+To satisfy rigorous digital evidence and academic submission standards, CheckReality AI includes an institutional-grade, downloadable forensic certificate designed specifically to fit on a **single standard A4 page** with zero vertical spillover.
 
-```text
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│ [Logo] CHECKREALITY AI              DIGITAL EVIDENCE AUDIT CERTIFICATE  [CERT-6ACF8A12]│
-│        BBSBEC · CSE DEPT.           Unified Multimodal Forensic Verification Engine     │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│ INSTITUTIONAL PROVENANCE & ISSUING AUTHORITY                                           │
-│ Institution : Dept. of Computer Science & Engineering, BBSBEC (IKGPTU)                 │
-│ Lead Dev    : Divyansh Rajat (Roll No. 2300358)                                         │
-│ Supervisor  : Dr. Manpreet Kaur (Associate Professor, CSE)                              │
-│ Core System : Bayesian Multimodal Fusion & Zero-Trust Forensic Verification Engine     │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│ EVIDENCE PAYLOAD & CHAIN OF CUSTODY                                                    │
-│ File: sample.mp4 │ Evaluated: 2026-10-14 │ Streams: VIDEO, AUDIO │ Hash: 8f4a...e12b    │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│ FORENSIC VERDICT & THREAT SEVERITY                                                     │
-│ [ MANIPULATION DETECTED (DEEPFAKE) ]   CONFIDENCE: 98.4%   RISK: CRITICAL   AGR: 0.94  │
-│ Synthesis: Discrepancy detected across spatial blending and acoustic pitch contours.   │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│ CROSS-MODAL PROBABILITY MATRIX                 XAI LOCALIZATION & ARTIFACT METRICS     │
-│ Video (B0+LSTM) : [██████████████████] 97.8%  • Spatial Frame Blending Anomalies       │
-│ Audio (ResNet)  : [██████████████████] 99.2%  • Mel Acoustic Pitch Discontinuities     │
-│ Image (EffNet)  : [------------------]  0.0%  • [ Grad-CAM Frame Saliency Preview ]    │
-│ Text (RoBERTa)  : [------------------]  0.0%                                           │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│ [ SEAL ]  VERIFIED AUDIT EVIDENCE DISCLAIMER                                           │
-│ Lead Investigator: Divyansh Rajat (2300358)    Supervisor: Dr. Manpreet Kaur (BBSBEC)  │
-└────────────────────────────────────────────────────────────────────────────────────────┘
-```
+<div align="center">
+
+<img src="docs/assets/forensic_report_template.png" alt="CheckReality AI Official Forensic Audit Certificate Template" width="820" style="border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);" />
+
+*Figure: Official CheckReality AI Forensic Audit Certificate — Standard Single-Page A4 Printable & Downloadable Certificate with Institutional Provenance, Cryptographic Custody, Dynamic Threat Matrix, Embedded Grad-CAM Heatmap, and Dual Signatures.*
+
+</div>
+
+#### Dynamic 4-Modality Certificate Adaptation
+
+The certificate automatically detects the submitted media type and dynamically adapts its diagnostic metrics, metadata profile, and Explainable AI (XAI) panels across all four supported modules:
+
+| Modality | Audit Header Badge | Specialized Diagnostic Matrix | Explainable AI (XAI) Localization Panel |
+|---|---|---|---|
+| **Video** | `SPATIAL-TEMPORAL VIDEO AUDIT` | Face-Swap Score, BiLSTM Temporal Stability, Demuxed Audio Check, C23 Robustness | Peak Frame Grad-CAM Heatmap + Spatial Boundary Blending Seam Coordinates |
+| **Audio** | `ACOUSTIC FORENSIC AUDIT` | Voice Spoof/Clone %, Bonafide Purity %, SpecAugment Coherence, Vocoder Phase Sync | Log-Mel Spectrogram Waveform + Pitch Discontinuity & Vocoder Glitch Timestamps |
+| **Image** | `FACIAL IMAGE FORENSIC AUDIT` | Manipulation Score, Biological Skin Coherence, Seam Boundary, Sensor PRNU Pattern | High-Resolution Spatial Grad-CAM Heatmap + Facial Landmark Blending Artifacts |
+| **Text** | `TEXTUAL MISINFORMATION AUDIT` | Misinformation Risk %, AI Generation Likelihood %, Perplexity/Burstiness, Factuality | Salient Semantic Token Highlights with Gradient Attribution Weights & Excerpt |
+| **Multimodal** | `MULTIMODAL FUSION AUDIT` | Full Bayesian Matrix (Video: 35%, Audio: 25%, Image: 25%, Text: 15%) + Agreement | Multi-Stream Correlation: Visual Saliency + Acoustic Timestamps + Tokens |
 
 #### Key Engineering Features of the Certificate:
 - **Strict Single-Page A4 Layout**: Tailored `@media print` styling (`@page { size: A4 portrait; margin: 8mm 10mm; }`) with `page-break-inside: avoid;` and compact typography ensures the entire certificate prints cleanly onto **exactly 1 page** without trailing blank sheets.
@@ -517,6 +508,7 @@ To satisfy rigorous digital evidence and academic submission standards, CheckRea
 - **Embedded XAI Grad-CAM Thumbnail**: Directly includes the localized Grad-CAM activation frame inside the printed document for immediate visual reference.
 - **Dual Verification Seals & Signatures**: Features formal sign-off blocks for both the Lead Investigator and Project Guide alongside a circular tamper-evident institutional verification seal.
 - **Client-Side Print & PDF Trigger**: Accessible via the **Download PDF** button (`window.print()`), automatically stripping out screen-only navigation, web chrome, and video players.
+- **Dedicated Standalone Preview**: Accessible in-browser via the `Preview PDF` modal or directly via `?view=certificate`.
 
 
 ---

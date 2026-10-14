@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { submissionsService } from '../api/submissions';
 import { ForensicMediaPlayer } from '../components/ForensicMediaPlayer';
 import { PrintableForensicReport } from '../components/PrintableForensicReport';
 
 export default function Report() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const isCertificateOnly = searchParams.get('view') === 'certificate';
   const [report, setReport] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -26,6 +28,14 @@ export default function Report() {
   }
   if (!report) {
     return <div className="p-10 text-center text-red-500">Failed to load report.</div>;
+  }
+
+  if (isCertificateOnly) {
+    return (
+      <div className="min-h-screen bg-slate-200/90 py-6 px-4 flex justify-center items-start">
+        <PrintableForensicReport report={report} id={id || ''} />
+      </div>
+    );
   }
 
   const fusion = report.result?.fusion;
