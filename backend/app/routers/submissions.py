@@ -34,6 +34,9 @@ async def process_submission_background(submission_id: ObjectId, modality: str, 
         else:
             if 'fake_probability' in inference_result:
                 fusion_inputs[modality] = inference_result['fake_probability']
+                if 'audio_stream' in inference_result and isinstance(inference_result['audio_stream'], dict):
+                    if 'spoof_probability' in inference_result['audio_stream']:
+                        fusion_inputs['audio'] = inference_result['audio_stream']['spoof_probability']
             elif 'spoof_probability' in inference_result:
                 fusion_inputs[modality] = inference_result['spoof_probability']
             elif 'misinformation_probability' in inference_result:

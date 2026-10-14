@@ -128,43 +128,98 @@ def get_audio_transforms():
         audio_db_transform = torchaudio.transforms.AmplitudeToDB(stype='power')
     return audio_mel_transform, audio_db_transform
 
-def predict_audio(audio_path: str):
-    model = get_audio_model()
-    mel_transform, to_db = get_audio_transforms()
-    
+def extract_audio_from_video(video_path: str):
+    """
+    Extracts the audio track from a video container (mp4, mov, avi, webm, mkv)
+    into a temporary 16kHz mono WAV file for acoustic deepfake / voice spoof analysis.
+    Returns path to the temporary wav file, or None if no audio track is found.
+    """
+    import subprocess
+    import tempfile
     try:
-        import torchaudio
-        waveform, sr = torchaudio.load(audio_path)
-        if waveform.shape[0] > 1:
-            waveform = waveform.mean(dim=0, keepdim=True)
-        if sr != 16000:
-            resampler = torchaudio.transforms.Resample(orig_freq=sr, new_freq=16000)
-            waveform = resampler(waveform)
-        max_samples = 16000 * 5
-        if waveform.shape[1] > max_samples:
-            waveform = waveform[:, :max_samples]
-        elif waveform.shape[1] < max_samples:
-            waveform = torch.nn.functional.pad(waveform, (0, max_samples - waveform.shape[1]))
+        import imageio_ffmpeg
+        ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
     except Exception:
-        import soundfile as sf
-        y, sr = sf.read(audio_path)
-        if len(y.shape) > 1: y = y.mean(axis=1)
-        if sr != 16000: y = librosa.resample(y, orig_sr=sr, target_sr=16000)
-        max_samples = 16000 * 5
-        if len(y) > max_samples: y = y[:max_samples]
-        else: y = np.pad(y, (0, max_samples - len(y)))
-        waveform = torch.from_numpy(y).float().unsqueeze(0)
+        ffmpeg_exe = "ffmpeg"
+
+    fd, output_wav = tempfile.mkstemp(suffix=".wav")
+    os.close(fd)
+
+    cmd = [
+        ffmpeg_exe, "-y",
+        "-i", video_path,
+        "-vn",
+        "-acodec", "pcm_s16le",
+        "-ar", "16000",
+        "-ac", "1",
+        output_wav
+    ]
+    try:
+        res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if res.returncode == 0 and os.path.exists(output_wav) and os.path.getsize(output_wav) > 100:
+            return output_wav
+    except Exception:
+        pass
+
+    if os.path.exists(output_wav):
+        try:
+            os.remove(output_wav)
+        except OSError:
+            pass
+    return None
+
+def predict_audio(audio_path: str):
+    temp_extracted_wav = None
+    ext = audio_path.lower().split('.')[-1]
+    if ext in ['mp4', 'mov', 'avi', 'webm', 'mkv']:
+        temp_extracted_wav = extract_audio_from_video(audio_path)
+        if not temp_extracted_wav:
+            return None  # Video has no audio stream
+        audio_path = temp_extracted_wav
+
+    try:
+        model = get_audio_model()
+        mel_transform, to_db = get_audio_transforms()
         
-    spec = to_db(mel_transform(waveform))
-    spec_min, spec_max = spec.min(), spec.max()
-    spec = (spec - spec_min) / (spec_max - spec_min + 1e-8)
-    
-    tensor_spec = spec.repeat(3, 1, 1).unsqueeze(0).to(device)
-    
-    with torch.no_grad():
-        out = model(tensor_spec)
-        prob = torch.softmax(out, dim=1)[0, 1].item()
-    return {"spoof_probability": prob, "label": "Spoof/Fake" if prob > 0.5 else "Real/Bonafide"}
+        try:
+            import torchaudio
+            waveform, sr = torchaudio.load(audio_path)
+            if waveform.shape[0] > 1:
+                waveform = waveform.mean(dim=0, keepdim=True)
+            if sr != 16000:
+                resampler = torchaudio.transforms.Resample(orig_freq=sr, new_freq=16000)
+                waveform = resampler(waveform)
+            max_samples = 16000 * 5
+            if waveform.shape[1] > max_samples:
+                waveform = waveform[:, :max_samples]
+            elif waveform.shape[1] < max_samples:
+                waveform = torch.nn.functional.pad(waveform, (0, max_samples - waveform.shape[1]))
+        except Exception:
+            import soundfile as sf
+            y, sr = sf.read(audio_path)
+            if len(y.shape) > 1: y = y.mean(axis=1)
+            if sr != 16000: y = librosa.resample(y, orig_sr=sr, target_sr=16000)
+            max_samples = 16000 * 5
+            if len(y) > max_samples: y = y[:max_samples]
+            else: y = np.pad(y, (0, max_samples - len(y)))
+            waveform = torch.from_numpy(y).float().unsqueeze(0)
+            
+        spec = to_db(mel_transform(waveform))
+        spec_min, spec_max = spec.min(), spec.max()
+        spec = (spec - spec_min) / (spec_max - spec_min + 1e-8)
+        
+        tensor_spec = spec.repeat(3, 1, 1).unsqueeze(0).to(device)
+        
+        with torch.no_grad():
+            out = model(tensor_spec)
+            prob = torch.softmax(out, dim=1)[0, 1].item()
+        return {"spoof_probability": prob, "label": "Spoof/Fake" if prob > 0.5 else "Real/Bonafide"}
+    finally:
+        if temp_extracted_wav and os.path.exists(temp_extracted_wav):
+            try:
+                os.remove(temp_extracted_wav)
+            except OSError:
+                pass
 
 
 # --- VIDEO INFERENCE ---
@@ -233,20 +288,30 @@ def run_inference(modality: str, file_path: str = None, text_content: str = None
             ext = file_path.lower().split('.')[-1]
             if ext in ['jpg', 'jpeg', 'png', 'webp']:
                 results['image'] = predict_image(file_path)
-            elif ext in ['mp4', 'mov', 'avi']:
+            elif ext in ['mp4', 'mov', 'avi', 'webm', 'mkv']:
                 results['video'] = predict_video(file_path)
                 try:
-                    results['audio'] = predict_audio(file_path)
+                    aud_res = predict_audio(file_path)
+                    if aud_res:
+                        results['audio'] = aud_res
                 except Exception:
                     pass
-            elif ext in ['wav', 'mp3', 'm4a']:
+            elif ext in ['wav', 'mp3', 'm4a', 'aac', 'flac']:
                 results['audio'] = predict_audio(file_path)
         if text_content:
             results['text'] = predict_text(text_content)
         return results
     elif modality == 'image': return predict_image(file_path)
     elif modality == 'audio': return predict_audio(file_path)
-    elif modality == 'video': return predict_video(file_path)
+    elif modality == 'video':
+        vid_res = predict_video(file_path)
+        try:
+            aud_res = predict_audio(file_path)
+            if aud_res:
+                vid_res['audio_stream'] = aud_res
+        except Exception:
+            pass
+        return vid_res
     elif modality == 'text': return predict_text(text_content)
     return {"error": "Invalid modality"}
 

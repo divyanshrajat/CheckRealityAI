@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { submissionsService } from '../api/submissions';
+import { ForensicMediaPlayer } from '../components/ForensicMediaPlayer';
 
 export default function Dashboard() {
   const [latestSub, setLatestSub] = useState<any>(null);
@@ -65,17 +66,14 @@ export default function Dashboard() {
           {/* Source Media Section */}
           <div className="bg-surface-crisp rounded-xl p-8 shadow-sm border border-outline/10 col-span-1 lg:col-span-2 flex flex-col gap-4">
              <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold border-b border-outline/10 pb-4">Source Media Analyzed</h2>
-             <div className="flex items-center justify-center bg-black/5 rounded-lg overflow-hidden relative min-h-[200px] w-full">
+             <div className="w-full">
                 {latestSub.file_url ? (
-                  latestSub.file_url.endsWith('.mp4') || latestSub.file_url.endsWith('.avi') || latestSub.file_url.endsWith('.mov') ? (
-                    <video src={`${import.meta.env.VITE_API_URL || 'http://localhost:8001'}${latestSub.file_url}`} controls className="max-w-full max-h-[400px]" />
-                  ) : latestSub.file_url.endsWith('.wav') || latestSub.file_url.endsWith('.mp3') ? (
-                    <audio src={`${import.meta.env.VITE_API_URL || 'http://localhost:8001'}${latestSub.file_url}`} controls className="w-full max-w-md" />
-                  ) : (
-                    <img src={`${import.meta.env.VITE_API_URL || 'http://localhost:8001'}${latestSub.file_url}`} alt="Uploaded Media" className="max-w-full max-h-[400px] object-contain" />
-                  )
+                  <ForensicMediaPlayer
+                    fileUrl={latestSub.file_url}
+                    originalFilename={latestSub.original_filename}
+                  />
                 ) : (
-                  <div className="text-slate-body p-8 text-center flex flex-col items-center gap-2">
+                  <div className="text-slate-body p-8 text-center flex flex-col items-center gap-2 bg-black/5 rounded-lg">
                     <span className="material-symbols-outlined text-4xl">text_snippet</span>
                     <span>Text-only submission</span>
                   </div>

@@ -149,7 +149,7 @@ function Footer() {
   if (location.pathname === '/') return null;
 
   return (
-    <footer className="fixed bottom-0 left-0 w-full shrink-0 py-3 pb-3 text-center flex flex-col items-center gap-1 z-[100] bg-surface-crisp/80 backdrop-blur-md border-t border-outline/20 shadow-[0_-4px_20px_rgba(11,25,44,0.05)]">
+    <footer className="w-full mt-auto shrink-0 py-4 text-center flex flex-col items-center gap-1 z-30 bg-surface-crisp/80 backdrop-blur-md border-t border-outline/20 shadow-[0_-4px_20px_rgba(11,25,44,0.05)]">
       <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-surface-crisp/90 backdrop-blur-md shadow-sm font-label-code text-body-sm text-slate-body border border-outline/20">
         <span className="material-symbols-outlined text-primary text-[16px]">code_blocks</span>
         <span>Project Developed by <strong className="text-on-surface font-semibold text-primary">Divyansh Rajat</strong></span>
@@ -165,7 +165,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <div className="min-h-screen flex flex-col bg-transparent relative z-10 pb-20">
+        <div className="min-h-screen flex flex-col bg-transparent relative z-10">
           <GlobalBackground />
           <Navigation />
           <main className="flex-grow">

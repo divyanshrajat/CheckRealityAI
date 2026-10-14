@@ -21,4 +21,4 @@ Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location .\ba
 
 # Launch the API which now serves the built frontend on port 8001
 .\venv\Scripts\Activate.ps1
-uvicorn app.main:app --port 8001
+uvicorn app.main:app --port 8001 --reload

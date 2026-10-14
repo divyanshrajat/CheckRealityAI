@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { submissionsService } from '../api/submissions';
+import { ForensicMediaPlayer } from '../components/ForensicMediaPlayer';
 
 export default function Report() {
   const { id } = useParams();
@@ -106,15 +107,10 @@ export default function Report() {
                 </div>
               )}
               {report.file_url && (
-                <div className="rounded-lg overflow-hidden bg-surface-container w-max max-w-full border border-outline/20">
-                  {report.file_url.match(/\.(mp4|webm|ogg|mov)$/i) ? (
-                    <video src={`${import.meta.env.VITE_API_URL || 'http://localhost:8001'}${report.file_url}`} controls className="w-full h-auto max-h-[400px]" />
-                  ) : report.file_url.match(/\.(mp3|wav|ogg|m4a)$/i) ? (
-                     <audio src={`${import.meta.env.VITE_API_URL || 'http://localhost:8001'}${report.file_url}`} controls className="w-full m-4" />
-                  ) : (
-                    <img src={`${import.meta.env.VITE_API_URL || 'http://localhost:8001'}${report.file_url}`} alt="Analyzed Media" className="w-full h-auto max-h-[500px] object-contain" />
-                  )}
-                </div>
+                <ForensicMediaPlayer
+                  fileUrl={report.file_url}
+                  originalFilename={report.original_filename}
+                />
               )}
               {report.text_content && (
                 <div className="p-4 bg-surface-container-low rounded-lg text-body-md text-on-surface border border-outline/10 whitespace-pre-wrap">
