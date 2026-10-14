@@ -47,9 +47,11 @@ Rather than relying on isolated heuristic checks, CheckReality AI couples deep c
 | Pillar | Capability | Technical Implementation |
 |---|---|---|
 | **Full Modality Coverage** | 4-in-1 unified verification platform | Deepfake Images, Temporal Deepfake Videos, Audio Spoofs/Voice Clones, and AI Misinformation/Essays |
+| **Dual-Stream Video Pipeline** | Visual & acoustic decomposed analysis | Automated audio track demuxing from video containers (MP4/MOV/AVI/WebM) + synchronized acoustic & visual fusion |
 | **Organic 99+% Tier** | Fine-tuned on standard benchmarks | Rigorously trained without data leakage: ASVspoof 2019, FaceForensics++ C23, 140k Faces, and Real/Fake News |
 | **Multimodal Bayesian Fusion** | Cross-modal agreement & risk indexing | Calibrated reliability weighting, cross-stream discrepancy detection (e.g. audio dubbed onto real video), and risk tiering |
 | **Genuine Explainable AI (XAI)** | Full transparency, zero black boxes | Real gradient backpropagation: Visual Grad-CAM heatmaps, acoustic harmonic saliency, and token-level gradient attribution |
+| **HTTP 206 Media Streaming** | Instant seeking & sound preservation | Custom Range streaming (`Status: 206`) + zero-silence Forensic Media Player with active audio track indicators |
 | **Production Ready** | Single-terminal containerized execution | Async FastAPI gateway, Celery task workers, isolated MongoDB/Redis brokers, and responsive 16:9 React dashboard |
 
 ---
@@ -129,7 +131,7 @@ CheckRealityAI/
 ├── frontend/                 # Forensic Studio Web Application
 │   ├── src/
 │   │   ├── api/              # Axios HTTP client & API route definitions
-│   │   ├── components/       # Reusable UI primitives (ProtectedRoute, layout guards)
+│   │   ├── components/       # Reusable UI primitives (ForensicMediaPlayer, ProtectedRoute)
 │   │   ├── context/          # React AuthContext session & JWT state management
 │   │   ├── pages/            # Viewports (Landing, Upload, Report, History, Transparency)
 │   │   ├── App.tsx           # Client router & navigation root
@@ -278,6 +280,14 @@ Rather than relying solely on raw probabilities, forensic threat tiers integrate
 | 🟡 **HIGH (DISCREPANCY DETECTED)** | $40\% - 59.9\%$ | $< 0.60$ (with $>1$ stream) | **Cross-modal swap attack** (e.g. authentic video with AI-dubbed voice) |
 | 🔵 **MODERATE / SUSPICIOUS** | $40\% - 59.9\%$ | $\ge 0.60$ | Inconclusive or subtle artifacts; recommended for manual review |
 | 🟢 **LOW / AUTHENTIC** | $< 40\%$ | Any | Consistent authentic biometric & semantic characteristics |
+
+#### 7. Dual-Stream Video Decomposition & Automated Acoustic Extraction
+When evaluating video content (under either `modality=video` or `modality=multimodal`), real-world attacks frequently manipulate only a single channel (e.g. authentic speech paired with an AI-generated face swap, or authentic broadcast video spliced with an acoustic voice clone).
+
+CheckReality AI implements **Automated Dual-Stream Cross-Modal Decomposition**:
+1. **Visual Frame Analysis**: 16 uniformly sampled frames across the video timeline are fed to the `EfficientNet-B0 + 2L LSTM` pipeline to capture spatial boundary artifacts and inter-frame temporal inconsistencies ($p_{\text{video}}$).
+2. **Acoustic Demuxing & Extraction**: The video container (MP4, WebM, MOV, AVI, MKV) is automatically probed for audio streams. If detected, the acoustic track is extracted in real time into uncompressed 16kHz mono PCM (`pcm_s16le`) via bundled FFmpeg utilities and routed to the `ResNet-18 Log-Mel Spectrogram` spoofing classifier ($p_{\text{audio}}$).
+3. **Synchronous Bayesian Fusion**: Both visual and acoustic probabilities are fed into the Bayesian Multimodal Fusion Engine. If streams diverge (e.g. authentic video with cloned audio), the Cross-Modal Agreement Index drops, triggering a targeted **`HIGH (DISCREPANCY DETECTED)`** warning.
 
 ### Explainable AI (XAI) Suite (`ml/xai/engine.py`)
 
@@ -429,6 +439,13 @@ curl -X GET "http://localhost:8001/submissions/{submission_id}" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
+#### 7. Stream Analyzed Video / Audio with HTTP 206 Byte-Range Seeking
+```bash
+# Streams video/audio supporting Range requests for instant seeking & synchronous audio/video decoding
+curl -X GET "http://localhost:8001/uploads/{filename}" \
+  -H "Range: bytes=0-1048576"
+```
+
 ---
 
 ## 7. Forensic Authenticity Report & Interactive UI
@@ -436,12 +453,13 @@ curl -X GET "http://localhost:8001/submissions/{submission_id}" \
 The React 18 user interface is built around high-density forensic analysis:
 
 1. **Forensic Verdict Card**: Displays unified status (`REAL` or `FAKE`), confidence percentage, dynamic Risk Tier (`LOW`, `MODERATE`, `HIGH`, `CRITICAL`), and Cross-Modal Agreement score.
-2. **Forensic Synthesis Engine**: Plain-language synthesis explaining why the model reached its decision.
-3. **Multi-Modal Breakdown Grid**: Displays per-modality confidence bars for Video, Audio, Image, and Text.
-4. **Visual Grad-CAM Viewer**: Interactive side-by-side display of original media and the colored thermal activation heatmap with detected anomaly coordinates.
-5. **Acoustic Timeline Inspector**: Displays localized millisecond distortion windows where phase anomalies or vocoder glitches occurred.
-6. **Token Saliency Highlighting**: Color-codes influential words that triggered misinformation or synthetic text classifiers.
-7. **One-Click PDF Export**: Uses client-side print stylesheets (`window.print()`) to generate clean, printable forensic audit reports.
+2. **Forensic Media Player (`ForensicMediaPlayer.tsx`)**: High-fidelity HTML5 video & audio player with active sound preservation (`muted = false`, 100% initial volume), real-time acoustic stream detection (`• Audio Track Active (Sound Enabled)`), manual volume sliders, one-click browser policy unmute recovery, and HTTP 206 Range seeking.
+3. **Forensic Synthesis Engine**: Plain-language synthesis explaining why the model reached its decision.
+4. **Multi-Modal Breakdown Grid**: Displays per-modality confidence bars for Video, Audio, Image, and Text.
+5. **Visual Grad-CAM Viewer**: Interactive side-by-side display of original media and the colored thermal activation heatmap with detected anomaly coordinates.
+6. **Acoustic Timeline Inspector**: Displays localized millisecond distortion windows where phase anomalies or vocoder glitches occurred.
+7. **Token Saliency Highlighting**: Color-codes influential words that triggered misinformation or synthetic text classifiers.
+8. **One-Click PDF Export**: Uses client-side print stylesheets (`window.print()`) to generate clean, printable forensic audit reports.
 
 ---
 
@@ -511,11 +529,11 @@ INTEGRATION TEST SUMMARY: 5/5 SUITES PASSED
 
 - **Frontend Compilation**: Production build passes cleanly with zero TypeScript errors:
   ```text
-  ✓ 93 modules transformed.
-  dist/index.html                   0.99 kB
-  dist/assets/index-Ba_EVSJM.css   52.01 kB
-  dist/assets/index-soOcbCVP.js   427.54 kB
-  ✓ built in 8.63s
+  ✓ 94 modules transformed.
+  dist/index.html                   0.99 kB │ gzip:   0.52 kB
+  dist/assets/index-fIlpLnN5.css   57.62 kB │ gzip:  10.12 kB
+  dist/assets/index-IT4pNdz_.js   454.47 kB │ gzip: 128.87 kB
+  ✓ built in 2.15s
   ```
 
 ---
