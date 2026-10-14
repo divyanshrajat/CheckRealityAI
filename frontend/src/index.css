@@ -7,3 +7,58 @@
     @apply bg-background text-gray-900 font-sans antialiased;
   }
 }
+
+/* Single-Page Forensic Report Print Stylesheet */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 11px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide web chrome, interactive controls, header, footer */
+  header, footer, nav, button, video, audio, .screen-only, .no-print {
+    display: none !important;
+  }
+
+  /* Hide background decorative canvas and elements */
+  .pointer-events-none, .fixed, .cyber-grid {
+    display: none !important;
+  }
+
+  /* Hide interactive report view during print */
+  .interactive-screen-report {
+    display: none !important;
+  }
+
+  /* Show ONLY the single-page printable certificate */
+  #printable-forensic-report {
+    display: block !important;
+    visibility: visible !important;
+    position: relative !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-inside: avoid !important;
+  }
+}
+
+@media screen {
+  .print-only {
+    display: none !important;
+  }
+}

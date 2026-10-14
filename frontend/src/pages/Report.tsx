@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { submissionsService } from '../api/submissions';
 import { ForensicMediaPlayer } from '../components/ForensicMediaPlayer';
+import { PrintableForensicReport } from '../components/PrintableForensicReport';
 
 export default function Report() {
   const { id } = useParams();
   const [report, setReport] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -31,30 +33,51 @@ export default function Report() {
   const isFake = fusion?.unified_fake_probability > 0.5;
 
   return (
-    <div className="w-full flex flex-col">
-      <div className="w-full max-w-[1280px] mx-auto px-margin-mobile md:px-margin py-space-xl flex flex-col gap-space-2xl relative">
-        <section className="flex flex-col md:flex-row md:items-center justify-between gap-space-md pb-space-xs">
-          <div className="flex flex-col gap-space-xs">
-            <div className="flex items-center gap-space-xs">
-              <span className="px-space-sm py-space-xs rounded-full bg-surface-tint-ice text-primary font-label-code text-label-code font-bold tracking-wide">
-                REPORT ID: #{id}
-              </span>
+    <>
+      {/* 1. Official Single-Page Printable Forensic Report (Active during Print / PDF Export) */}
+      <div className="print-only">
+        <PrintableForensicReport report={report} id={id || ''} />
+      </div>
+
+      {/* 2. Interactive Screen View */}
+      <div className="interactive-screen-report w-full flex flex-col">
+        <div className="w-full max-w-[1280px] mx-auto px-margin-mobile md:px-margin py-space-xl flex flex-col gap-space-2xl relative">
+          <section className="flex flex-col md:flex-row md:items-center justify-between gap-space-md pb-space-xs">
+            <div className="flex flex-col gap-space-xs">
+              <div className="flex items-center gap-space-xs">
+                <span className="px-space-sm py-space-xs rounded-full bg-surface-tint-ice text-primary font-label-code text-label-code font-bold tracking-wide">
+                  REPORT ID: #{id}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-baseline gap-x-space-md gap-y-space-xs">
+                <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight">Forensic Authenticity Report</h1>
+              </div>
             </div>
-            <div className="flex flex-wrap items-baseline gap-x-space-md gap-y-space-xs">
-              <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight">Forensic Authenticity Report</h1>
+            <div className="flex flex-wrap items-center gap-space-sm bg-surface-crisp px-space-md py-space-sm rounded-xl shadow-sm">
+              <div className="flex items-center gap-space-xs text-tertiary">
+                <span className="material-symbols-outlined text-[18px]">schedule</span>
+                <span className="font-body-sm text-body-sm">{new Date(report.created_at || Date.now()).toLocaleString()}</span>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setShowPreviewModal(true)} 
+                className="ml-2 flex items-center gap-1.5 px-3 py-1 bg-surface-tint-ice text-primary border border-primary/20 rounded-full hover:bg-surface-tint-ice/80 transition-colors font-bold text-sm" 
+                title="Preview Standard Single-Page Certificate"
+              >
+                <span className="material-symbols-outlined text-[16px]">visibility</span>
+                Preview PDF
+              </button>
+              <button 
+                type="button"
+                onClick={() => window.print()} 
+                className="flex items-center gap-2 px-3.5 py-1 bg-primary text-on-primary rounded-full hover:bg-electric-blue-hover transition-colors font-bold text-sm shadow-[0_2px_8px_rgba(0,102,255,0.25)]" 
+                title="Download Single-Page PDF Report"
+              >
+                <span className="material-symbols-outlined text-[16px]">download</span>
+                Download PDF
+              </button>
             </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-space-sm bg-surface-crisp px-space-md py-space-sm rounded-xl shadow-sm">
-            <div className="flex items-center gap-space-xs text-tertiary">
-              <span className="material-symbols-outlined text-[18px]">schedule</span>
-              <span className="font-body-sm text-body-sm">{new Date(report.created_at || Date.now()).toLocaleString()}</span>
-            </div>
-            <button onClick={() => window.print()} className="ml-4 flex items-center gap-2 px-3 py-1 bg-primary text-on-primary rounded-full hover:bg-electric-blue-hover transition-colors font-bold text-sm" title="Download Report">
-              <span className="material-symbols-outlined text-[16px]">download</span>
-              Download PDF
-            </button>
-          </div>
-        </section>
+          </section>
 
         <section className="w-full bg-surface-crisp rounded-xl shadow-md p-space-lg md:p-space-xl">
           <div className="grid grid-cols-1 gap-space-md">
@@ -216,5 +239,44 @@ export default function Report() {
         )}
       </div>
     </div>
+
+      {/* 3. Certificate Preview Modal */}
+      {showPreviewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto no-print">
+          <div className="bg-surface-crisp border border-outline/20 rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 bg-surface-container-high flex items-center justify-between border-b border-outline/10">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-xl">description</span>
+                <h3 className="font-headline-sm text-base text-on-surface font-bold">Official Forensic Certificate Preview (A4 Single Page)</h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-on-primary font-bold text-xs rounded-full hover:bg-electric-blue-hover transition-colors shadow-sm"
+                >
+                  <span className="material-symbols-outlined text-sm">print</span>
+                  Print / Save PDF
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPreviewModal(false)}
+                  className="p-1.5 hover:bg-surface-container rounded-lg text-slate-body hover:text-on-surface transition-colors"
+                  title="Close Preview"
+                >
+                  <span className="material-symbols-outlined text-xl">close</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 overflow-y-auto bg-slate-900/60 flex items-start justify-center">
+              <div className="bg-white rounded-lg shadow-xl overflow-hidden w-full max-w-[800px]">
+                <PrintableForensicReport report={report} id={id || ''} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

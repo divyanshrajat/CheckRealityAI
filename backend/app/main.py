@@ -143,4 +143,7 @@ if os.path.exists(frontend_dist):
         path = os.path.join(frontend_dist, full_path)
         if os.path.exists(path) and os.path.isfile(path):
             return FileResponse(path)
-        return FileResponse(os.path.join(frontend_dist, "index.html"))
+        return FileResponse(
+            os.path.join(frontend_dist, "index.html"),
+            headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
+        )
