@@ -33,7 +33,10 @@ export const PrintableForensicReport: React.FC<PrintableForensicReportProps> = (
   })();
 
   const isFake = fusion?.unified_fake_probability > 0.5;
-  const confidence = ((fusion?.unified_fake_probability ?? 0) * 100).toFixed(1);
+  const rawProb = fusion?.unified_fake_probability ?? 0;
+  const confidence = fusion?.unified_confidence !== undefined 
+    ? Number(fusion.unified_confidence).toFixed(1)
+    : (isFake ? (rawProb * 100) : ((1.0 - rawProb) * 100)).toFixed(1);
   const riskSeverity = fusion?.risk_severity || (isFake ? 'HIGH RISK' : 'LOW RISK');
   const agreement = fusion?.cross_modal_agreement !== undefined 
     ? `${(fusion.cross_modal_agreement * 100).toFixed(0)}%` 
@@ -248,14 +251,14 @@ export const PrintableForensicReport: React.FC<PrintableForensicReportProps> = (
               <div className={`text-sm font-black my-0.5 ${
                 videoProb === null ? 'text-slate-400' : (videoProb > 0.5 ? 'text-red-600' : 'text-emerald-600')
               }`}>
-                {videoProb !== null ? `${(videoProb * 100).toFixed(1)}%` : 'N/A'}
+                {videoProb !== null ? `${(videoProb > 0.5 ? videoProb * 100 : (1.0 - videoProb) * 100).toFixed(1)}%` : 'N/A'}
               </div>
             </div>
             <div>
               <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
                 <div 
                   className={`h-full ${videoProb === null ? 'bg-slate-300' : (videoProb > 0.5 ? 'bg-red-500' : 'bg-emerald-500')}`} 
-                  style={{ width: videoProb !== null ? `${videoProb * 100}%` : '0%' }}
+                  style={{ width: videoProb !== null ? `${(videoProb > 0.5 ? videoProb * 100 : (1.0 - videoProb) * 100)}%` : '0%' }}
                 />
               </div>
               <div className={`text-[8px] font-bold mt-1 ${
@@ -273,14 +276,14 @@ export const PrintableForensicReport: React.FC<PrintableForensicReportProps> = (
               <div className={`text-sm font-black my-0.5 ${
                 audioProb === null ? 'text-slate-400' : (audioProb > 0.5 ? 'text-red-600' : 'text-emerald-600')
               }`}>
-                {audioProb !== null ? `${(audioProb * 100).toFixed(1)}%` : 'N/A'}
+                {audioProb !== null ? `${(audioProb > 0.5 ? audioProb * 100 : (1.0 - audioProb) * 100).toFixed(1)}%` : 'N/A'}
               </div>
             </div>
             <div>
               <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
                 <div 
                   className={`h-full ${audioProb === null ? 'bg-slate-300' : (audioProb > 0.5 ? 'bg-red-500' : 'bg-emerald-500')}`} 
-                  style={{ width: audioProb !== null ? `${audioProb * 100}%` : '0%' }}
+                  style={{ width: audioProb !== null ? `${(audioProb > 0.5 ? audioProb * 100 : (1.0 - audioProb) * 100)}%` : '0%' }}
                 />
               </div>
               <div className={`text-[8px] font-bold mt-1 ${
@@ -298,14 +301,14 @@ export const PrintableForensicReport: React.FC<PrintableForensicReportProps> = (
               <div className={`text-sm font-black my-0.5 ${
                 imageProb === null ? 'text-slate-400' : (imageProb > 0.5 ? 'text-red-600' : 'text-emerald-600')
               }`}>
-                {imageProb !== null ? `${(imageProb * 100).toFixed(1)}%` : 'N/A'}
+                {imageProb !== null ? `${(imageProb > 0.5 ? imageProb * 100 : (1.0 - imageProb) * 100).toFixed(1)}%` : 'N/A'}
               </div>
             </div>
             <div>
               <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
                 <div 
                   className={`h-full ${imageProb === null ? 'bg-slate-300' : (imageProb > 0.5 ? 'bg-red-500' : 'bg-emerald-500')}`} 
-                  style={{ width: imageProb !== null ? `${imageProb * 100}%` : '0%' }}
+                  style={{ width: imageProb !== null ? `${(imageProb > 0.5 ? imageProb * 100 : (1.0 - imageProb) * 100)}%` : '0%' }}
                 />
               </div>
               <div className={`text-[8px] font-bold mt-1 ${
@@ -323,14 +326,14 @@ export const PrintableForensicReport: React.FC<PrintableForensicReportProps> = (
               <div className={`text-sm font-black my-0.5 ${
                 textProb === null ? 'text-slate-400' : (textProb > 0.5 ? 'text-red-600' : 'text-emerald-600')
               }`}>
-                {textProb !== null ? `${(textProb * 100).toFixed(1)}%` : 'N/A'}
+                {textProb !== null ? `${(textProb > 0.5 ? textProb * 100 : (1.0 - textProb) * 100).toFixed(1)}%` : 'N/A'}
               </div>
             </div>
             <div>
               <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
                 <div 
                   className={`h-full ${textProb === null ? 'bg-slate-300' : (textProb > 0.5 ? 'bg-red-500' : 'bg-emerald-500')}`} 
-                  style={{ width: textProb !== null ? `${textProb * 100}%` : '0%' }}
+                  style={{ width: textProb !== null ? `${(textProb > 0.5 ? textProb * 100 : (1.0 - textProb) * 100)}%` : '0%' }}
                 />
               </div>
               <div className={`text-[8px] font-bold mt-1 ${

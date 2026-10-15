@@ -286,9 +286,9 @@ def run_inference(modality: str, file_path: str = None, text_content: str = None
         results = {}
         if file_path:
             ext = file_path.lower().split('.')[-1]
-            if ext in ['jpg', 'jpeg', 'png', 'webp']:
+            if ext in ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'tiff']:
                 results['image'] = predict_image(file_path)
-            elif ext in ['mp4', 'mov', 'avi', 'webm', 'mkv']:
+            elif ext in ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv']:
                 results['video'] = predict_video(file_path)
                 try:
                     aud_res = predict_audio(file_path)
@@ -296,7 +296,7 @@ def run_inference(modality: str, file_path: str = None, text_content: str = None
                         results['audio'] = aud_res
                 except Exception:
                     pass
-            elif ext in ['wav', 'mp3', 'm4a', 'aac', 'flac']:
+            elif ext in ['wav', 'mp3', 'm4a', 'aac', 'flac', 'ogg', 'wma', 'opus']:
                 results['audio'] = predict_audio(file_path)
         if text_content:
             results['text'] = predict_text(text_content)
@@ -336,18 +336,39 @@ def generate_xai_explanation(modality: str, file_path: str = None, text_content:
         results = {}
         if file_path:
             ext = file_path.lower().split('.')[-1]
-            if ext in ['jpg', 'jpeg', 'png', 'webp']:
+            if ext in ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'tiff']:
                 results['image'] = generate_xai_explanation('image', file_path, text_content)
-            elif ext in ['mp4', 'mov', 'avi']:
+            elif ext in ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv']:
                 results['video'] = generate_xai_explanation('video', file_path, text_content)
                 try:
-                    results['audio'] = generate_xai_explanation('audio', file_path, text_content)
+                    aud_xai = generate_xai_explanation('audio', file_path, text_content)
+                    if aud_xai and 'error' not in aud_xai:
+                        results['audio'] = aud_xai
                 except Exception:
                     pass
-            elif ext in ['wav', 'mp3', 'm4a']:
+            elif ext in ['wav', 'mp3', 'm4a', 'aac', 'flac', 'ogg', 'wma', 'opus']:
                 results['audio'] = generate_xai_explanation('audio', file_path, text_content)
         if text_content:
             results['text'] = generate_xai_explanation('text', file_path, text_content)
+
+        # Expose top-level properties so UI can read xai_type or anomalies directly
+        if len(results) == 1:
+            first_key = list(results.keys())[0]
+            first_val = results[first_key]
+            if isinstance(first_val, dict):
+                if 'xai_type' in first_val:
+                    results['xai_type'] = first_val['xai_type']
+                if 'suspicious_timestamps' in first_val:
+                    results['suspicious_timestamps'] = first_val['suspicious_timestamps']
+                if 'suspicious_regions' in first_val:
+                    results['suspicious_regions'] = first_val['suspicious_regions']
+                if 'heatmap_base64' in first_val:
+                    results['heatmap_base64'] = first_val['heatmap_base64']
+                if 'suspicious_words' in first_val:
+                    results['suspicious_words'] = first_val['suspicious_words']
+        elif len(results) > 1:
+            results['xai_type'] = 'Multimodal Cross-Attention Ensemble'
+
         return results
 
     try:

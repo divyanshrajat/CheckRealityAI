@@ -236,94 +236,124 @@ def generate_video_gradcam(video_path: str, model: nn.Module, device: torch.devi
 
 # --- AUDIO SPECTRAL SALIENCY ---
 def generate_audio_xai(audio_path: str, model: nn.Module, device: torch.device) -> Dict[str, Any]:
+    temp_extracted_wav = None
     try:
+        ext = audio_path.lower().split('.')[-1]
+        if ext in ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv']:
+            try:
+                from backend.app.inference import extract_audio_from_video
+                temp_extracted_wav = extract_audio_from_video(audio_path)
+                if not temp_extracted_wav:
+                    return {
+                        "xai_type": "Acoustic Saliency Analysis",
+                        "suspicious_timestamps": [],
+                        "note": "No audio stream found in video container"
+                    }
+                audio_path = temp_extracted_wav
+            except Exception:
+                pass
+
+        try:
+            import torchaudio
+            waveform, sr = torchaudio.load(audio_path)
+            if waveform.shape[0] > 1:
+                waveform = waveform.mean(dim=0, keepdim=True)
+            if sr != 16000:
+                resampler = torchaudio.transforms.Resample(orig_freq=sr, new_freq=16000)
+                waveform = resampler(waveform)
+        except Exception:
+            import soundfile as sf
+            import librosa
+            y, sr = sf.read(audio_path)
+            if len(y.shape) > 1: y = y.mean(axis=1)
+            if sr != 16000: y = librosa.resample(y, orig_sr=sr, target_sr=16000)
+            waveform = torch.from_numpy(y).float().unsqueeze(0)
+            
+        duration_sec = waveform.shape[1] / 16000.0
+        
+        # Compute spectrogram
         import torchaudio
-        waveform, sr = torchaudio.load(audio_path)
-        if waveform.shape[0] > 1:
-            waveform = waveform.mean(dim=0, keepdim=True)
-        if sr != 16000:
-            resampler = torchaudio.transforms.Resample(orig_freq=sr, new_freq=16000)
-            waveform = resampler(waveform)
-    except Exception:
-        import soundfile as sf
-        import librosa
-        y, sr = sf.read(audio_path)
-        if len(y.shape) > 1: y = y.mean(axis=1)
-        if sr != 16000: y = librosa.resample(y, orig_sr=sr, target_sr=16000)
-        waveform = torch.from_numpy(y).float().unsqueeze(0)
+        mel_transform = torchaudio.transforms.MelSpectrogram(
+            sample_rate=16000, n_fft=2048, win_length=2048, hop_length=512, n_mels=128, power=2.0
+        )
+        to_db = torchaudio.transforms.AmplitudeToDB(stype='power')
+        spec = to_db(mel_transform(waveform))
+        spec = (spec - spec.min()) / (spec.max() - spec.min() + 1e-8)
         
-    duration_sec = waveform.shape[1] / 16000.0
-    
-    # Compute spectrogram
-    import torchaudio
-    mel_transform = torchaudio.transforms.MelSpectrogram(
-        sample_rate=16000, n_fft=2048, win_length=2048, hop_length=512, n_mels=128, power=2.0
-    )
-    to_db = torchaudio.transforms.AmplitudeToDB(stype='power')
-    spec = to_db(mel_transform(waveform))
-    spec = (spec - spec.min()) / (spec.max() - spec.min() + 1e-8)
-    
-    spec_tensor = spec.repeat(3, 1, 1).unsqueeze(0).to(device)
-    spec_tensor.requires_grad = True
-    
-    model.eval()
-    with torch.enable_grad():
-        out = model(spec_tensor)
-        score = out[0, 1] if out.shape[1] > 1 else out[0]
-        score.backward()
-        grad = spec_tensor.grad.abs().mean(dim=1).squeeze().cpu().numpy() # [128, T]
+        spec_tensor = spec.repeat(3, 1, 1).unsqueeze(0).to(device)
+        spec_tensor.requires_grad = True
         
-    # Analyze temporal energy profiles in gradient
-    temporal_profile = grad.mean(axis=0) # [T]
-    if temporal_profile.max() > temporal_profile.min():
-        temporal_norm = (temporal_profile - temporal_profile.min()) / (temporal_profile.max() - temporal_profile.min() + 1e-8)
-    else:
-        temporal_norm = np.zeros_like(temporal_profile)
+        model.eval()
+        with torch.enable_grad():
+            out = model(spec_tensor)
+            prob = torch.softmax(out, dim=1)[0, 1].item() if out.shape[1] > 1 else torch.sigmoid(out[0]).item()
+            score = out[0, 1] if out.shape[1] > 1 else out[0]
+            score.backward()
+            grad = spec_tensor.grad.abs().mean(dim=1).squeeze().cpu().numpy() # [128, T]
+            
+        is_fake = bool(prob > 0.5)
+
+        # Analyze temporal energy profiles in gradient
+        temporal_profile = grad.mean(axis=0) # [T]
+        if temporal_profile.max() > temporal_profile.min():
+            temporal_norm = (temporal_profile - temporal_profile.min()) / (temporal_profile.max() - temporal_profile.min() + 1e-8)
+        else:
+            temporal_norm = np.zeros_like(temporal_profile)
+            
+        T = len(temporal_norm)
+        dt = duration_sec / max(1, T)
         
-    T = len(temporal_norm)
-    dt = duration_sec / max(1, T)
-    
-    # Find peaks in gradient profile
-    threshold = 0.65
-    peaks = np.where(temporal_norm > threshold)[0]
-    
-    suspicious_timestamps = []
-    if len(peaks) > 0:
-        # Group contiguous peak frames
-        segments = []
-        curr_start = peaks[0]
-        curr_end = peaks[0]
-        for p in peaks[1:]:
-            if p - curr_end <= 3:
-                curr_end = p
-            else:
-                segments.append((curr_start, curr_end))
-                curr_start = p
-                curr_end = p
-        segments.append((curr_start, curr_end))
+        # Find peaks in gradient profile
+        threshold = 0.65
+        peaks = np.where(temporal_norm > threshold)[0]
         
-        for s_idx, e_idx in segments[:4]:
-            t_start = round(float(s_idx * dt), 2)
-            t_end = round(float(min(duration_sec, (e_idx + 1) * dt + 0.2)), 2)
+        reason = "Synthetic vocoder phase discontinuity & high-frequency distortion" if is_fake else "Natural acoustic resonance & biological vocal tract formant continuity"
+        fallback_reason = "Spectral envelope harmonic irregularity detected" if is_fake else "Stable acoustic baseline & harmonic resonance verified"
+
+        suspicious_timestamps = []
+        if len(peaks) > 0:
+            # Group contiguous peak frames
+            segments = []
+            curr_start = peaks[0]
+            curr_end = peaks[0]
+            for p in peaks[1:]:
+                if p - curr_end <= 3:
+                    curr_end = p
+                else:
+                    segments.append((curr_start, curr_end))
+                    curr_start = p
+                    curr_end = p
+            segments.append((curr_start, curr_end))
+            
+            for s_idx, e_idx in segments[:4]:
+                t_start = round(float(s_idx * dt), 2)
+                t_end = round(float(min(duration_sec, (e_idx + 1) * dt + 0.2)), 2)
+                suspicious_timestamps.append({
+                    "start_sec": float(t_start),
+                    "end_sec": float(t_end),
+                    "reason": reason
+                })
+                
+        if not suspicious_timestamps:
+            mid_sec = round(float(duration_sec / 2), 2)
             suspicious_timestamps.append({
-                "start_sec": float(t_start),
-                "end_sec": float(t_end),
-                "reason": "Synthetic vocoder phase discontinuity & high-frequency distortion"
+                "start_sec": float(max(0.0, mid_sec - 0.5)),
+                "end_sec": float(min(round(float(duration_sec), 2), mid_sec + 0.5)),
+                "reason": fallback_reason
             })
             
-    if not suspicious_timestamps:
-        mid_sec = round(float(duration_sec / 2), 2)
-        suspicious_timestamps.append({
-            "start_sec": float(max(0.0, mid_sec - 0.5)),
-            "end_sec": float(min(round(float(duration_sec), 2), mid_sec + 0.5)),
-            "reason": "Spectral envelope harmonic irregularity detected"
-        })
-        
-    return {
-        "xai_type": "Acoustic Saliency Analysis",
-        "suspicious_timestamps": suspicious_timestamps,
-        "duration_seconds": round(float(duration_sec), 2)
-    }
+        return {
+            "xai_type": "Acoustic Saliency Analysis",
+            "suspicious_timestamps": suspicious_timestamps,
+            "is_fake": is_fake,
+            "duration_seconds": round(float(duration_sec), 2)
+        }
+    finally:
+        if temp_extracted_wav and os.path.exists(temp_extracted_wav):
+            try:
+                os.remove(temp_extracted_wav)
+            except OSError:
+                pass
 
 
 # --- TEXT TOKEN ATTRIBUTION SALIENCY ---

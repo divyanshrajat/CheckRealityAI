@@ -55,6 +55,10 @@ export default function Report() {
   const fusion = report.result?.fusion;
   const xai = report.result?.xai;
   const isFake = fusion?.unified_fake_probability > 0.5;
+  const rawProb = fusion?.unified_fake_probability ?? 0;
+  const displayConfidence = fusion?.unified_confidence !== undefined
+    ? Number(fusion.unified_confidence).toFixed(1)
+    : (isFake ? (rawProb * 100) : ((1.0 - rawProb) * 100)).toFixed(1);
 
   return (
     <>
@@ -111,7 +115,7 @@ export default function Report() {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className={`inline-flex items-center gap-space-xs px-space-md py-space-xs rounded-full font-label-lg text-label-lg shadow-sm ${isFake ? 'bg-verdict-fake-bg text-verdict-fake' : 'bg-verdict-real-bg text-verdict-real'}`}>
                 <span className="material-symbols-outlined text-[20px]">{isFake ? 'gpp_bad' : 'gpp_good'}</span>
-                <span>VERDICT: {fusion?.unified_label?.toUpperCase() || 'UNKNOWN'} (Confidence: {((fusion?.unified_fake_probability || 0) * 100).toFixed(1)}%)</span>
+                <span>VERDICT: {fusion?.unified_label?.toUpperCase() || 'UNKNOWN'} (Confidence: {displayConfidence}%)</span>
               </div>
               {fusion?.risk_severity && (
                 <div className="flex items-center gap-2">
@@ -174,19 +178,28 @@ export default function Report() {
         <section className="flex flex-col gap-space-md">
           <h2 className="font-headline-sm text-headline-sm text-on-surface">Multi-Modal Breakdown</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-lg">
-            {fusion?.modality_contributions && Object.entries(fusion.modality_contributions).map(([mod, prob]: [string, any]) => (
-              <div key={mod} className="bg-surface-crisp rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
-                <div className="flex flex-col gap-space-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="uppercase text-slate-body font-bold">{mod}</span>
-                    <span className={prob > 0.5 ? 'text-verdict-fake font-bold' : 'text-verdict-real font-bold'}>{(prob * 100).toFixed(1)}%</span>
-                  </div>
-                  <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
-                    <div className={prob > 0.5 ? 'bg-verdict-fake h-full rounded-full' : 'bg-verdict-real h-full rounded-full'} style={{width: `${prob * 100}%`}} />
+            {fusion?.modality_contributions && Object.entries(fusion.modality_contributions).map(([mod, prob]: [string, any]) => {
+              const streamFake = prob > 0.5;
+              const streamConfidence = streamFake ? (prob * 100) : ((1.0 - prob) * 100);
+              return (
+                <div key={mod} className="bg-surface-crisp rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+                  <div className="flex flex-col gap-space-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="uppercase text-slate-body font-bold">{mod}</span>
+                      <span className={streamFake ? 'text-verdict-fake font-bold' : 'text-verdict-real font-bold'}>
+                        {streamConfidence.toFixed(1)}% {streamFake ? 'Synthetic' : 'Authentic'}
+                      </span>
+                    </div>
+                    <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+                      <div 
+                        className={streamFake ? 'bg-verdict-fake h-full rounded-full' : 'bg-verdict-real h-full rounded-full'} 
+                        style={{width: `${streamConfidence}%`}} 
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
@@ -196,7 +209,10 @@ export default function Report() {
             <div className="bg-surface-crisp rounded-xl p-space-lg shadow-sm border border-outline/10 hover:shadow-md transition-all">
                
                <div className="flex items-center justify-between mb-4">
-                 <p className="font-body-lg text-on-surface"><strong className="text-primary mr-2">Engine:</strong> {xai.xai_type || 'General Interpretability Engine'}</p>
+                 <p className="font-body-lg text-on-surface">
+                   <strong className="text-primary mr-2">Engine:</strong>
+                   {xai.xai_type || xai.audio?.xai_type || xai.video?.xai_type || xai.image?.xai_type || xai.text?.xai_type || 'General Interpretability Engine'}
+                 </p>
                  <span className="px-3 py-1 rounded-full bg-surface-tint-ice text-primary text-xs font-bold uppercase tracking-wider">XAI DEEP-DIVE</span>
                </div>
 
@@ -221,12 +237,14 @@ export default function Report() {
                  </div>
                )}
                
-               {/* Audio Anomalies */}
+               {/* Audio Anomalies / Saliency */}
                {(xai.audio?.suspicious_timestamps || xai.suspicious_timestamps) && (
-                 <div className="mt-4 p-4 rounded-lg bg-verdict-amber-bg/30 border-l-4 border-verdict-amber">
+                 <div className={`mt-4 p-4 rounded-lg border-l-4 ${isFake ? 'bg-verdict-amber-bg/30 border-verdict-amber' : 'bg-verdict-real-bg/30 border-verdict-real'}`}>
                    <strong className="text-on-surface flex items-center gap-2 mb-2">
-                     <span className="material-symbols-outlined text-verdict-amber">graphic_eq</span>
-                     Acoustic Distortions Detected:
+                     <span className={`material-symbols-outlined ${isFake ? 'text-verdict-amber' : 'text-verdict-real'}`}>
+                       {isFake ? 'graphic_eq' : 'verified'}
+                     </span>
+                     {isFake ? 'Acoustic Distortions Detected:' : 'Acoustic Saliency & Formant Consistency:'}
                    </strong>
                    <ul className="list-disc pl-6 flex flex-col gap-1 text-slate-body">
                      {(xai.audio?.suspicious_timestamps || xai.suspicious_timestamps).map((ts: any, i: number) => (

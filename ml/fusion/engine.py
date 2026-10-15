@@ -71,9 +71,11 @@ def generate_forensic_synthesis(
         m = mods[0]
         p = contributions[m]
         status = "synthetic/manipulated" if p > 0.5 else "authentic/bonafide"
-        parts.append(f"Single-stream {m.upper()} forensic assessment indicates {status} content with {p*100:.1f}% confidence.")
+        conf_pct = (p * 100.0) if p > 0.5 else ((1.0 - p) * 100.0)
+        parts.append(f"Single-stream {m.upper()} forensic assessment indicates {status} content with {conf_pct:.1f}% confidence.")
         
-    parts.append(f"Overall forensic verdict: {unified_label.upper()} with unified confidence of {unified_prob*100:.1f}% ({risk} Risk).")
+    unified_conf = (unified_prob * 100.0) if unified_prob > 0.5 else ((1.0 - unified_prob) * 100.0)
+    parts.append(f"Overall forensic verdict: {unified_label.upper()} with unified confidence of {unified_conf:.1f}% ({risk} Risk).")
     return " ".join(parts)
 
 def multimodal_fusion(inputs: Dict[str, float]) -> Dict[str, Any]:
@@ -84,6 +86,7 @@ def multimodal_fusion(inputs: Dict[str, float]) -> Dict[str, Any]:
     if not inputs:
         return {
             "unified_fake_probability": 0.0,
+            "unified_confidence": 100.0,
             "unified_label": "Real",
             "modality_contributions": {},
             "risk_severity": "LOW / AUTHENTIC",
@@ -109,12 +112,14 @@ def multimodal_fusion(inputs: Dict[str, float]) -> Dict[str, Any]:
     unified_score = normalize_probability(unified_score)
     
     unified_label = "Fake" if unified_score > 0.5 else "Real"
+    unified_confidence = float(round((unified_score if unified_score > 0.5 else (1.0 - unified_score)) * 100.0, 1))
     agreement = compute_cross_modal_agreement(normalized_inputs)
     risk = compute_risk_severity(unified_score, agreement, len(normalized_inputs))
     summary = generate_forensic_synthesis(unified_score, unified_label, normalized_inputs, agreement, risk)
     
     return {
         "unified_fake_probability": round(unified_score, 4),
+        "unified_confidence": unified_confidence,
         "unified_label": unified_label,
         "modality_contributions": {k: round(v, 4) for k, v in normalized_inputs.items()},
         "risk_severity": risk,
