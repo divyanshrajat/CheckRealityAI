@@ -186,6 +186,7 @@ Every model in CheckReality AI is fine-tuned on verified public academic dataset
 
 #### 1. Audio Voice Cloning & Spoofing Detection
 - **Architecture**: Residual Neural Network (`ResNet-18`) with 128-band Mel-Spectrogram acoustic front-end.
+- **Supported Audio Formats**: `.flac` (lossless ASVspoof standard), `.wav`, `.mp3`, `.m4a`, `.aac`, `.ogg`, `.wma`, `.opus`.
 - **Audio Preprocessing**: Unified 16 kHz resampler, 2048 FFT window, 512 hop length, log-power scaling (`AmplitudeToDB`).
 - **Data Augmentation**: Time masking and frequency masking via **SpecAugment**, simulating compression noise and transmission jitter.
 - **Dataset**: ASVspoof 2019 Logical Access (LA) evaluation benchmark (4,000 train / 1,000 validation).
@@ -263,6 +264,17 @@ $$
 \end{cases}
 $$
 
+The **Calibrated Forensic Confidence** reported to analysts represents the posterior certainty of the determined class:
+
+$$
+\text{Confidence}(\hat{Y}) = \begin{cases} 
+\hat{P}_{\text{unified}} \times 100\% & \text{if } \hat{Y} = \text{Fake} \\
+(1.0 - \hat{P}_{\text{unified}}) \times 100\% & \text{if } \hat{Y} = \text{Real}
+\end{cases}
+$$
+
+This guarantees mathematical clarity across single-stream and multi-modal reports: when bonafide authentic media exhibits a near-zero manipulation probability ($p \approx 0.00$), the platform reports $\approx 100.0\%$ confidence in authenticity, eliminating misinterpretation between raw fake probability and decision certainty.
+
 #### 5. Cross-Modal Agreement Index (Discrepancy Detection)
 To expose **cross-modal attacks** (e.g. authentic video footage spliced with cloned/synthesized speech), an inter-stream consensus score $A_{\text{consensus}} \in [0, 1]$ measures dispersion across modality predictions:
 
@@ -302,7 +314,9 @@ Text Semantic    ──►  RoBERTa Word Embedding Saliency     ──►  Top I
 ```
 
 - **Visual Grad-CAM**: Computes $\alpha_k = \frac{1}{Z}\sum_i \sum_j \frac{\partial y^c}{\partial A_{ij}^k}$ over the final convolutional layer, projecting spatial heatmaps onto facial boundaries to highlight hairline seams, ocular warping, and blending borders.
-- **Acoustic Saliency**: Computes gradient norm $\sum_f |\nabla_{\text{spec}}|$, detecting high-frequency energy spikes typical of synthetic vocoders.
+- **Acoustic Saliency Analysis**: Computes backpropagated gradient energy profiles over 128 Mel-frequency bins across temporal frames $T$ ($\sum_f |\nabla_{\text{spec}}|$). Localizes temporal windows:
+  - *Synthetic Audio*: Flags vocoder phase discontinuities, spectral envelope smearing, and algorithmic modulation spikes.
+  - *Authentic Audio*: Validates natural biological vocal tract formant continuity and harmonic resonance stability.
 - **Token Attributions**: Computes embedding saliency $\| \nabla_e y \odot e \|_2$, ranking the exact keywords influencing misinformation or AI-generation classification.
 
 ---
