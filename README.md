@@ -2,9 +2,10 @@
 
 # CheckReality AI
 
+### A Multimodal Deepfake and Misinformation Detection System for Digital Content Authenticity
 **Unified Multimodal Forensic Verification & Deepfake Detection Framework**
 
-B.Tech Major Project (2026) · Developed by **Divyansh Rajat** (Roll No. 2300358) · Baba Banda Singh Bahadur Engineering College (IKGPTU) · Department of Computer Science & Engineering · Supervised by **Dr. Manpreet Kaur**
+B.Tech Major Project (July – December 2026) · Developed by **Divyansh Rajat** (Roll No. 2300358) · Baba Banda Singh Bahadur Engineering College, Fatehgarh Sahib (Affiliated to IKGPTU) · Department of Computer Science & Engineering · Supervised by **Dr. Manpreet Kaur**
 
 `PyTorch 2.5` · `FastAPI` · `React 18` · `TypeScript` · `Celery` · `Redis` · `MongoDB` · `Transformers` · `OpenCV` · `Docker Compose`
 
@@ -35,6 +36,10 @@ B.Tech Major Project (2026) · Developed by **Divyansh Rajat** (Roll No. 2300358
 ---
 
 ## 1. What is CheckReality AI?
+
+> **Official Capstone Title:** *A Multimodal Deepfake and Misinformation Detection System for Digital Content Authenticity*  
+> **Academic Degree:** Bachelor of Technology in Computer Science & Engineering, BBSBEC (IKGPTU)  
+> **Author & Investigator:** Divyansh Rajat (Roll No. 2300358) | **Project Guide:** Dr. Manpreet Kaur
 
 The rapid proliferation of generative artificial intelligence has made creating hyper-realistic deepfake images, fabricated videos, synthetic voice clones, and automated misinformation virtually frictionless. While commodity synthesis tools continue to advance, forensic detection tools remain fragmented: existing solutions are typically isolated to a single modality (e.g. text-only or image-only), treat models as uninterpretable black boxes, fail to expose localization artifacts, and degrade severely on compressed real-world media.
 
