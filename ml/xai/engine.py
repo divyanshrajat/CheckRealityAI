@@ -90,6 +90,11 @@ def generate_image_gradcam(image_path: str, model: nn.Module, device: torch.devi
     heatmap_base64 = base64.b64encode(buffer).decode('utf-8')
     
     # Extract real high-intensity activation contours
+    with torch.no_grad():
+        out_eval = model(input_tensor)
+        prob = torch.softmax(out_eval, dim=1)[0, 1].item() if out_eval.shape[1] > 1 else torch.sigmoid(out_eval[0]).item()
+    is_fake = prob > 0.5
+
     threshold = int(255 * 0.55)
     _, thresh_mask = cv2.threshold(cam_uint8, threshold, 255, cv2.THRESH_BINARY)
     contours, _ = cv2.findContours(thresh_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -99,13 +104,20 @@ def generate_image_gradcam(image_path: str, model: nn.Module, device: torch.devi
         x, y, w, h = cv2.boundingRect(cnt)
         if w * h > (w_orig * h_orig * 0.005): # Filter tiny noise
             rel_y = y / h_orig
-            reason = "High gradient activation in facial boundary region"
-            if rel_y < 0.35:
-                reason = "Forehead / hairline synthetic blending artifact detected"
-            elif rel_y < 0.65:
-                reason = "Facial landmark / ocular region manipulation anomaly"
+            if is_fake:
+                if rel_y < 0.35:
+                    reason = "Forehead / hairline synthetic blending artifact detected"
+                elif rel_y < 0.65:
+                    reason = "Facial landmark / ocular region manipulation anomaly"
+                else:
+                    reason = "Perioral / jawline boundary synthesis seam"
             else:
-                reason = "Perioral / jawline boundary synthesis seam"
+                if rel_y < 0.35:
+                    reason = "Forehead / hairline natural anatomical landmark gradient"
+                elif rel_y < 0.65:
+                    reason = "Ocular / facial landmark natural biometric feature alignment"
+                else:
+                    reason = "Perioral / oral region organic biological landmark alignment"
                 
             suspicious_regions.append({
                 "x": int(x),
@@ -121,7 +133,7 @@ def generate_image_gradcam(image_path: str, model: nn.Module, device: torch.devi
             "y": int(h_orig * 0.25),
             "width": int(w_orig * 0.5),
             "height": int(h_orig * 0.5),
-            "reason": "Subtle distributed synthetic texture anomaly"
+            "reason": "Subtle distributed synthetic texture anomaly" if is_fake else "Natural, uniform skin texture and organic specular reflection distribution"
         })
         
     return {
@@ -162,7 +174,10 @@ def generate_video_gradcam(video_path: str, model: nn.Module, device: torch.devi
         features = backbone(video_tensors)
         features_seq = features.unsqueeze(0) # [1, 16, 1280]
         lstm_out, _ = model.lstm(features_seq)
-        
+        out_cls = model.fc(lstm_out[:, -1, :])
+        prob = torch.softmax(out_cls, dim=1)[0, 1].item() if out_cls.shape[1] > 1 else torch.sigmoid(out_cls[0]).item()
+    is_fake = prob > 0.5
+
     # Analyze frame variance along temporal sequence
     frame_variances = torch.norm(features[1:] - features[:-1], dim=1).cpu().numpy()
     peak_idx = int(np.argmax(frame_variances) + 1) if len(frame_variances) > 0 else 8
@@ -215,7 +230,7 @@ def generate_video_gradcam(video_path: str, model: nn.Module, device: torch.devi
                 "y": int(y),
                 "width": int(w),
                 "height": int(h),
-                "reason": f"Temporal blending inconsistency detected at t={timestamp_sec}s"
+                "reason": f"Temporal blending inconsistency detected at t={timestamp_sec}s" if is_fake else f"Natural facial movement and biological temporal frame continuity at t={timestamp_sec}s"
             })
             
     if not suspicious_regions:
@@ -224,7 +239,7 @@ def generate_video_gradcam(video_path: str, model: nn.Module, device: torch.devi
             "y": int(h_orig * 0.2),
             "width": int(w_orig * 0.6),
             "height": int(h_orig * 0.6),
-            "reason": f"Facial temporal jitter across frames around t={timestamp_sec}s"
+            "reason": f"Facial temporal jitter across frames around t={timestamp_sec}s" if is_fake else f"Consistent anatomical keypoints and natural temporal cadence around t={timestamp_sec}s"
         })
         
     return {

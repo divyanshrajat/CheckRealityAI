@@ -81,8 +81,6 @@ export const PrintableForensicReport: React.FC<PrintableForensicReportProps> = (
     audioProb = inference.audio_stream.spoof_probability;
   } else if (inference?.spoof_probability !== undefined && (isAudioFile || modality === 'audio')) {
     audioProb = inference.spoof_probability;
-  } else if (isVideoFile && isFake && videoProb !== null) {
-    audioProb = 0.004; // Authentic natural background audio
   }
 
   // 3. Image stream probability

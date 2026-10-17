@@ -133,7 +133,7 @@ def fuse_results(modality_results: list) -> Dict[str, Any]:
     res = multimodal_fusion(scores)
     return {
         "final_label": res["unified_label"].lower(),
-        "confidence": round(res["unified_fake_probability"] * 100, 2),
+        "confidence": res["unified_confidence"],
         "modality_breakdown": [str(r.get("_id", "")) for r in modality_results],
         "explanation_summary": res["forensic_summary"]
     }
