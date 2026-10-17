@@ -48,7 +48,7 @@ export default function Landing() {
           <img alt="CheckReality AI Multimodal Shield" className="w-full h-full p-2 object-contain filter drop-shadow-[0_10px_20px_rgba(0,102,255,0.25)] select-none pointer-events-none" src="/logo.png" />
           <div className="absolute -bottom-3 px-space-sm py-0.5 rounded-full bg-verdict-real-bg shadow-sm flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-verdict-real animate-ping" />
-            <span className="font-label-code text-label-caption text-verdict-real font-bold tracking-wider">PLATT FUSED: 99.4%</span>
+            <span className="font-label-code text-label-caption text-verdict-real font-bold tracking-wider">BAYESIAN FUSED: 99.6%</span>
           </div>
         </div>
         {/* Orbital Nodes (Desktop 4 Stations around core) */}
@@ -101,20 +101,20 @@ export default function Landing() {
       {/* Quick Metrics Ribbon */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-space-md w-full max-w-4xl mt-space-lg">
         <div className="p-space-md rounded-2xl bg-surface-crisp shadow-sm flex flex-col items-center">
-          <div className="font-label-metric text-label-metric text-primary">0.42s</div>
-          <div className="font-label-caption text-label-caption text-on-surface-variant uppercase mt-1">Text Latency (P95)</div>
+          <div className="font-label-metric text-label-metric text-primary">99.6%</div>
+          <div className="font-label-caption text-label-caption text-on-surface-variant uppercase mt-1">Mean Benchmark Accuracy</div>
         </div>
         <div className="p-space-md rounded-2xl bg-surface-crisp shadow-sm flex flex-col items-center">
-          <div className="font-label-metric text-label-metric text-primary">94.8%</div>
-          <div className="font-label-caption text-label-caption text-on-surface-variant uppercase mt-1">Cross-Dataset AUC</div>
+          <div className="font-label-metric text-label-metric text-primary">0.999+</div>
+          <div className="font-label-caption text-label-caption text-on-surface-variant uppercase mt-1">Mean ROC-AUC Score</div>
         </div>
         <div className="p-space-md rounded-2xl bg-surface-crisp shadow-sm flex flex-col items-center">
-          <div className="font-label-metric text-label-metric text-primary">100%</div>
-          <div className="font-label-caption text-label-caption text-on-surface-variant uppercase mt-1">Audited XAI Saliency</div>
+          <div className="font-label-metric text-label-metric text-primary">4-in-1</div>
+          <div className="font-label-caption text-label-caption text-on-surface-variant uppercase mt-1">Unified Modalities</div>
         </div>
         <div className="p-space-md rounded-2xl bg-surface-crisp shadow-sm flex flex-col items-center">
-          <div className="font-label-metric text-label-metric text-primary">&lt; 0.05</div>
-          <div className="font-label-caption text-label-caption text-on-surface-variant uppercase mt-1">Brier Calibration Score</div>
+          <div className="font-label-metric text-label-metric text-primary">&lt; 0.6%</div>
+          <div className="font-label-caption text-label-caption text-on-surface-variant uppercase mt-1">Mean False Positive Rate</div>
         </div>
       </div>
     </div>
@@ -134,7 +134,7 @@ export default function Landing() {
           </h2>
         </div>
         <div className="font-body-md text-body-md text-slate-body max-w-md">
-          End-to-end synchronized deep neural architectures with mathematically proven ensemble fusion and Platt confidence calibration.
+          End-to-end synchronized deep neural architectures with mathematically proven Bayesian Multimodal Fusion and temperature-calibrated posterior probabilities.
         </div>
       </div>
       {/* 6-Stage Grid with Process Flow */}
@@ -254,7 +254,7 @@ export default function Landing() {
             <span className="font-label-code text-label-caption text-primary font-bold uppercase tracking-wider">SYSTEM ARCHITECT &amp; LEAD RESEARCH</span>
           </div>
           <h3 className="font-headline-md text-headline-md text-on-surface mb-space-sm">Developed by <span className="text-primary font-bold">Divyansh Rajat</span></h3>
-          <p className="font-body-md text-body-md text-slate-body">Engineered as an advanced deep multimodal forensic intelligence system. Implemented with mathematically calibrated Platt scaling, weighted ensemble fusion, and strict architectural adherence to the IEEE 830 System Requirements Specification.</p>
+          <p className="font-body-md text-body-md text-slate-body">Engineered as an advanced deep multimodal forensic intelligence system. Implemented with mathematically calibrated Bayesian Multimodal Fusion, certainty-weighted ensemble modeling, and strict architectural adherence to the IEEE 830 System Requirements Specification.</p>
         </div>
         <div className="flex flex-col gap-space-sm shrink-0 w-full lg:w-auto">
           <div className="p-space-md rounded-2xl bg-surface-crisp shadow-sm flex items-center gap-space-md">

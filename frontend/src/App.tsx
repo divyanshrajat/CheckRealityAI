@@ -116,7 +116,7 @@ function Navigation() {
             </div>
             <div className="flex items-center gap-space-xs px-space-sm py-space-xs rounded-full bg-surface-tint-ice">
               <span className="w-2 h-2 rounded-full bg-cyan-energy"></span>
-              <span className="font-label-code text-label-code text-secondary font-semibold">MODELS: 4 ACTIVE</span>
+              <span className="font-label-code text-label-code text-secondary font-semibold">4 MODALITIES ACTIVE</span>
             </div>
           </div>
           

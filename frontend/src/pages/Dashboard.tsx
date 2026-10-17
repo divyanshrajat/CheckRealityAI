@@ -47,6 +47,10 @@ export default function Dashboard() {
   const result = latestSub.result;
   const fusion = result?.fusion;
   const isFake = fusion?.unified_fake_probability > 0.5;
+  const rawProb = fusion?.unified_fake_probability ?? 0;
+  const displayConfidence = fusion?.unified_confidence !== undefined
+    ? (Number(fusion.unified_confidence) > 1 ? Number(fusion.unified_confidence) : Number(fusion.unified_confidence) * 100).toFixed(1)
+    : (isFake ? (rawProb * 100) : ((1.0 - rawProb) * 100)).toFixed(1);
 
   return (
     <div className="w-full max-w-[1200px] mx-auto p-8 flex flex-col gap-8">
@@ -94,7 +98,7 @@ export default function Dashboard() {
                   {fusion?.unified_label?.toUpperCase() || 'UNKNOWN'}
                 </span>
                 <span className="text-on-surface-variant mt-2 font-bold">
-                  Confidence: {((fusion?.unified_fake_probability || 0) * 100).toFixed(2)}%
+                  Confidence: {displayConfidence}%
                 </span>
               </div>
             </div>
@@ -102,17 +106,26 @@ export default function Dashboard() {
             <div className="mt-4">
               <h3 className="font-label-lg font-bold text-on-surface mb-3">Modality Contributions:</h3>
               <div className="flex flex-col gap-3">
-                {fusion?.modality_contributions && Object.entries(fusion.modality_contributions).map(([mod, prob]: [string, any]) => (
-                  <div key={mod} className="flex flex-col gap-1">
-                    <div className="flex justify-between font-label-code text-sm">
-                      <span className="uppercase text-slate-body font-bold">{mod}</span>
-                      <span className={prob > 0.5 ? 'text-verdict-fake font-bold' : 'text-verdict-real font-bold'}>{(prob * 100).toFixed(1)}%</span>
+                {fusion?.modality_contributions && Object.entries(fusion.modality_contributions).map(([mod, prob]: [string, any]) => {
+                  const streamFake = prob > 0.5;
+                  const streamConfidence = streamFake ? (prob * 100) : ((1.0 - prob) * 100);
+                  return (
+                    <div key={mod} className="flex flex-col gap-1">
+                      <div className="flex justify-between font-label-code text-sm">
+                        <span className="uppercase text-slate-body font-bold">{mod}</span>
+                        <span className={streamFake ? 'text-verdict-fake font-bold' : 'text-verdict-real font-bold'}>
+                          {streamConfidence.toFixed(1)}% {streamFake ? 'Synthetic' : 'Authentic'}
+                        </span>
+                      </div>
+                      <div className="w-full bg-surface-container rounded-full h-2 overflow-hidden">
+                        <div 
+                          className={`h-full rounded-full ${streamFake ? 'bg-verdict-fake' : 'bg-verdict-real'}`} 
+                          style={{width: `${Math.min(100, Math.max(5, streamConfidence))}%`}}
+                        />
+                      </div>
                     </div>
-                    <div className="w-full bg-surface-container rounded-full h-2 overflow-hidden">
-                      <div className={`h-full rounded-full ${prob > 0.5 ? 'bg-verdict-fake' : 'bg-verdict-real'}`} style={{width: `${prob * 100}%`}}></div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
