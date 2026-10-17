@@ -21,17 +21,30 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
-    const savedUser = localStorage.getItem('user');
-    return savedUser ? JSON.parse(savedUser) : null;
+    try {
+      const savedUser = localStorage.getItem('user');
+      if (!savedUser || savedUser === 'undefined' || savedUser === 'null') return null;
+      return JSON.parse(savedUser);
+    } catch (e) {
+      localStorage.removeItem('user');
+      return null;
+    }
   });
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
+  const [token, setToken] = useState<string | null>(() => {
+    const stored = localStorage.getItem('token');
+    return (stored && stored !== 'undefined' && stored !== 'null') ? stored : null;
+  });
   const [isLoading, setIsLoading] = useState(true);
 
-  const login = (newToken: string, newUser: User) => {
+  const login = (newToken: string, newUser: any) => {
+    if (!newToken || typeof newToken !== 'string' || newToken === 'undefined') return;
+    const userObj = (newUser && typeof newUser === 'object')
+      ? newUser
+      : { id: 'temp', email: '', full_name: 'Analyst' };
     localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify(newUser));
+    localStorage.setItem('user', JSON.stringify(userObj));
     setToken(newToken);
-    setUser(newUser);
+    setUser(userObj);
   };
 
   const logout = () => {
@@ -43,15 +56,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkAuth = async () => {
     const storedToken = localStorage.getItem('token');
-    if (!storedToken) {
+    if (!storedToken || storedToken === 'undefined' || storedToken === 'null') {
       setIsLoading(false);
       return;
     }
     
     try {
       const userData = await authService.getMe();
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
+      if (userData) {
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+      }
     } catch (err) {
       logout();
     } finally {

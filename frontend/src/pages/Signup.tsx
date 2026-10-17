@@ -61,14 +61,35 @@ export default function Signup() {
       setError('Passwords do not match');
       return;
     }
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return;
+    }
     setError('');
     setIsLoading(true);
     try {
       const res = await authService.signup(email, password, fullName, organization);
-      login(res.access_token, res.user);
-      navigate('/');
+      const userObj = res.user || { id: res.id || 'temp', email, full_name: fullName, name: fullName };
+      if (res.access_token) {
+        login(res.access_token, userObj);
+      } else {
+        // Fallback: auto-login
+        const loginRes = await authService.login(email, password);
+        login(loginRes.access_token, loginRes.user || userObj);
+      }
+      navigate('/upload');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to create account');
+      console.error('Signup error:', err);
+      const detail = err.response?.data?.detail;
+      if (typeof detail === 'string') {
+        setError(detail);
+      } else if (Array.isArray(detail)) {
+        setError(detail.map((d: any) => d.msg || JSON.stringify(d)).join(', '));
+      } else if (detail && typeof detail === 'object') {
+        setError(detail.message || JSON.stringify(detail));
+      } else {
+        setError(err.message || 'Failed to create account. Please check your credentials.');
+      }
     } finally {
       setIsLoading(false);
     }
