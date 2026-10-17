@@ -10,7 +10,7 @@
 | **Author / Developer** | Divyansh Rajat (Roll No. 2300358) |
 | **Guide** | Dr. Manpreet Kaur |
 | **Session** | July–Dec 2026 |
-| **Source docs** | `Project-2_Synopsis.pdf`, `CheckReality_InfoDoc.pdf`, `Project-2_Synopsis.pptx` |
+| **Source docs** | `Project-2_Synopsis.pdf`, `Project-2_Synopsis.pptx` |
 
 ---
 

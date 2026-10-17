@@ -26,7 +26,7 @@ The system accepts one or more content modalities from a signed-in user, runs mo
 | JWT | JSON Web Token, used for session auth |
 
 ### 1.4 References
-Synopsis document (`Project-2_Synopsis.pdf`, 21 pp., IKGPTU B.Tech CSE synopsis); guide info-doc (`CheckReality_InfoDoc.pdf`); synopsis references [1]–[33] therein.
+Synopsis document (`Project-2_Synopsis.pdf`, 21 pp., IKGPTU B.Tech CSE synopsis); IEEE 830-1998 Recommended Practice for Software Requirements Specifications; synopsis references [1]–[33] therein.
 
 ---
 

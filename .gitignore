@@ -46,3 +46,8 @@ frontend/dist/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Personal Viva Preparation Notes & Internal Scripts
+CheckReality_InfoDoc.pdf
+*InfoDoc*.pdf
+
