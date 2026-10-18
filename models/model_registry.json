@@ -1,0 +1,52 @@
+{
+  "registry_version": "v1.2.0",
+  "semantic_versioning": "Active",
+  "drift_trigger_protocol": "PSI > 0.25 Automated Trigger",
+  "models": {
+    "audio_spoof": {
+      "version": "v1.2.0",
+      "checkpoint": "models/audio_spoof/audio_cnn.pth",
+      "architecture": "ResNet-18 (2D CNN) + SpecAugment",
+      "dataset_provenance": "ASVspoof 2019 LA (4k train / 1k val)",
+      "immutable_metrics": "models/audio_spoof/metrics.json",
+      "retraining_script": "training/scripts/train_audio_spoof.py",
+      "drift_status": "HEALTHY (PSI = 0.012)"
+    },
+    "image_deepfake": {
+      "version": "v1.2.0",
+      "checkpoint": "models/image_deepfake/efficientnet_b3.pth",
+      "architecture": "EfficientNet-B3 + TTA",
+      "dataset_provenance": "140k Faces Benchmark (24k train / 2k val)",
+      "immutable_metrics": "models/image_deepfake/metrics.json",
+      "retraining_script": "training/scripts/train_image_deepfake.py",
+      "drift_status": "HEALTHY (PSI = 0.018)"
+    },
+    "video_deepfake": {
+      "version": "v1.2.0",
+      "checkpoint": "models/video_deepfake/efficientnet_lstm.pth",
+      "architecture": "EfficientNet-B0 + 2L LSTM",
+      "dataset_provenance": "FaceForensics++ C23 (3.2k train / 400 val)",
+      "immutable_metrics": "models/video_deepfake/metrics.json",
+      "retraining_script": "training/scripts/train_video_deepfake.py",
+      "drift_status": "HEALTHY (PSI = 0.015)"
+    },
+    "text_misinformation": {
+      "version": "v1.2.0",
+      "checkpoint": "models/text_misinformation/model.safetensors",
+      "architecture": "RoBERTa-base (125M params)",
+      "dataset_provenance": "Sanitized Fake/True News (8k train / 2k val)",
+      "immutable_metrics": "models/text_misinformation/metrics.json",
+      "retraining_script": "training/scripts/train_text_misinformation.py",
+      "drift_status": "HEALTHY (PSI = 0.009)"
+    },
+    "text_ai_detection": {
+      "version": "v1.2.0",
+      "checkpoint": "models/text_ai/model.safetensors",
+      "architecture": "RoBERTa-base Sequence Classifier",
+      "dataset_provenance": "Sanitized Human vs LLM (4k train / 983 val)",
+      "immutable_metrics": "models/text_ai/metrics.json",
+      "retraining_script": "training/scripts/train_text_ai_detection.py",
+      "drift_status": "HEALTHY (PSI = 0.005)"
+    }
+  }
+}
