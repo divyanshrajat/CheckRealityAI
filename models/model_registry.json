@@ -59,6 +59,20 @@
       "drift_monitoring_status": "BASELINE_ESTABLISHED",
       "production_drift_psi": "NOT_MEASURED",
       "production_drift_reason": "No live streaming production inference traffic logged yet; baseline distribution ready for incoming batches"
+    },
+    "cross_modal_fusion": {
+      "checkpoint": "models/fusion/cross_modal_fusion.pth",
+      "sha256_digest": "8b2c510fcea393e05d5ca5f0beb1437f80740376a97c54f60ff05ae912d59576",
+      "architecture": "CrossModalAttentionFusion (MHA, h=4, d=128)",
+      "training_dataset": "Joint Multimodal Feature Representation Pool",
+      "baseline_validation_samples": 150,
+      "retraining_script": "training/scripts/train_cross_modal_fusion.py",
+      "drift_monitoring_status": "BASELINE_ESTABLISHED",
+      "metrics": {
+        "accuracy": 0.8867,
+        "f1": 0.8777,
+        "roc_auc": 0.95
+      }
     }
   }
 }

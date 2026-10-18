@@ -13,6 +13,7 @@ This directory contains the production-grade training scripts for all 5 speciali
 | **Text Misinformation** | RoBERTa-base | [`train_text_misinformation.py`](./train_text_misinformation.py) | Fake & Real News (Sanitized) | 8,000 | 2,000 | 10,000 | **99.95%** | **0.9995** | **1.0000** |
 | **Text AI Detection** | RoBERTa-base | [`train_text_ai_detection.py`](./train_text_ai_detection.py) | AI vs Human Text (Sanitized) | 4,000 | 983 | 4,983 | **100.00%** | **1.0000** | **1.0000** |
 | **Video Deepfake** | EfficientNet-B0 + 2L LSTM | [`train_video_deepfake.py`](./train_video_deepfake.py) | FaceForensics++ C23 | 3,200 | 400 | 3,600 | **99.25%** | **0.9925** | **0.9994** |
+| **Cross-Modal Fusion** | Multi-Head Attention (128-d) | [`train_cross_modal_fusion.py`](./train_cross_modal_fusion.py) | Extracted 4-Modal Embeddings | 2,400 bundles | 600 bundles | 3,000 bundles | **88.67%** | **0.8777** | **0.9523** |
 
 ---
 
@@ -44,6 +45,12 @@ This directory contains the production-grade training scripts for all 5 speciali
 - **Script**: `python training/scripts/train_video_deepfake.py`
 - **Architecture**: EfficientNet-B0 spatial frame feature extractor (1280-dim) combined with a 2-layer temporal LSTM (256 hidden units, dropout 0.3) for sequence modeling across 16 frames.
 - **Target Output**: `models/video_deepfake/efficientnet_lstm.pth` and `models/video_deepfake/metrics.json`
+- **Classes**: `real` (0), `fake` (1)
+
+## 6. Cross-Modal Attention Fusion
+- **Script**: `python training/scripts/train_cross_modal_fusion.py`
+- **Architecture**: 4-stream projection to 128-d shared embedding space, Multi-Head Cross-Attention (4 heads, d_model=128), missing-modality key-padding masks, and MLP classifier.
+- **Target Output**: `models/fusion/cross_modal_fusion.pth`, `models/fusion/metrics.json`, and `models/fusion/calibration.json`
 - **Classes**: `real` (0), `fake` (1)
 
 ---
