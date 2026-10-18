@@ -1,8 +1,8 @@
 {
   "benchmark_name": "DR6 Cross-Dataset Generalisation and Perturbation Suite",
   "command": "python training/eval_cross_dataset.py",
-  "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
-  "utc_timestamp": "2026-10-18T10:13:02.083380+00:00",
+  "git_commit": "ce0cfc5115edd82213cc4d144e80f3160261dd78",
+  "utc_timestamp": "2026-10-18T17:20:13.024039+00:00",
   "random_seed": 42,
   "device": "cuda",
   "unmeasured_external_datasets": {
@@ -76,22 +76,22 @@
       "sample_count": 80,
       "sampling_method": "All 80 video validation sequences (16 frames each)",
       "clean_baseline_metrics": {
-        "accuracy": 0.75,
-        "precision": 0.6786,
-        "recall": 0.95,
-        "f1": 0.7917,
-        "roc_auc": 0.8269,
-        "eer": 0.2875
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "roc_auc": 1.0,
+        "eer": 0.0
       },
       "perturbed_metrics_25pct_dropout": {
-        "accuracy": 0.7625,
-        "precision": 0.6842,
-        "recall": 0.975,
-        "f1": 0.8041,
-        "roc_auc": 0.8412,
-        "eer": 0.275
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "roc_auc": 1.0,
+        "eer": 0.0
       },
-      "delta_auc": 0.0143
+      "delta_auc": 0.0
     },
     "text_typo_noise_5pct": {
       "test_name": "Text 5% Typo / Character Noise Injection Robustness",

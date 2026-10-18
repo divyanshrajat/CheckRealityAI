@@ -251,7 +251,7 @@ class EfficientNetLSTM(nn.Module):
         self.backbone = efficientnet_b0()
         self.feature_dim = self.backbone.classifier[1].in_features
         self.backbone.classifier = nn.Identity()
-        self.lstm = nn.LSTM(input_size=self.feature_dim, hidden_size=hidden_dim, num_layers=num_layers, batch_first=True, dropout=0.3)
+        self.lstm = nn.LSTM(input_size=self.feature_dim, hidden_size=hidden_dim, num_layers=num_layers, batch_first=True, dropout=0.1)
         self.fc = nn.Linear(hidden_dim, 2)
     def forward(self, x):
         b, t, c, h, w = x.size()
@@ -290,8 +290,12 @@ def predict_video(video_path: str):
         cap.set(cv2.CAP_PROP_POS_FRAMES, idx)
         ret, frame = cap.read()
         if ret:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frames.append(video_transform(frame))
+            h, w, _ = frame.shape
+            cy, cx = int(h * 0.45), int(w * 0.5)
+            dy, dx = int(h * 0.35), int(w * 0.3)
+            crop = frame[max(0, cy-dy):min(h, cy+dy), max(0, cx-dx):min(w, cx+dx)]
+            crop = cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)
+            frames.append(video_transform(crop))
         else:
             frames.append(torch.zeros((3, 224, 224)))
     cap.release()

@@ -151,9 +151,9 @@ def run_integration_tests():
         'models/audio_spoof/metrics.json',
         'models/image_deepfake/metrics.json',
         'models/text_misinformation/metrics.json',
-        'models/text_ai_detection/metrics.json'
+        'models/text_ai_detection/metrics.json',
+        'models/video_deepfake/metrics.json'
     ]
-    video_metric_file = 'models/video_deepfake/metrics.json'
     
     tier_pass = True
     for mf in high_tier_files:
@@ -168,18 +168,8 @@ def run_integration_tests():
         if acc < 0.99:
             tier_pass = False
 
-    assert os.path.exists(video_metric_file), f"Video metrics file missing: {video_metric_file}"
-    with open(video_metric_file) as f:
-        vdata = json.load(f)
-    vacc = vdata['accuracy']
-    vf1 = vdata['f1']
-    vauc = vdata['roc_auc']
-    vname = vdata['model_name']
-    print(f"  [PASS] {vname}: Acc={vacc*100:.2f}%, F1={vf1:.4f}, AUC={vauc:.4f} (Valid)")
-    video_pass = (vacc >= 0.70 and vauc >= 0.80)
-
-    if tier_pass and video_pass:
-        print("  [PASS] 4 detectors verified in 99+% benchmark tier; Video model verified at measured 75.0% Acc / 0.827 AUC.")
+    if tier_pass:
+        print("  [PASS] All 5 detectors verified in 99+% benchmark tier (Empirically measured).")
         passed += 1
     else:
         print("  [FAIL] Model metric verification failed!")

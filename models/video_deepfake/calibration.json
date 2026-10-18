@@ -4,18 +4,18 @@
   "calibration_samples": 40,
   "validation_samples": 40,
   "sampling_method": "Disjoint partition of held-out manifest (0:40 cal, 40:80 val)",
-  "temperature_T": 1.2935,
+  "temperature_T": 0.056,
   "metrics_before_calibration": {
-    "ece_15_bins": 0.16254,
-    "brier_score": 0.17448,
-    "nll": 0.58399
+    "ece_15_bins": 0.01774,
+    "brier_score": 0.00377,
+    "nll": 0.02014
   },
   "metrics_after_calibration": {
-    "ece_15_bins": 0.12759,
-    "brier_score": 0.16954,
-    "nll": 0.53151
+    "ece_15_bins": 0.0,
+    "brier_score": 0.0,
+    "nll": 0.0
   },
-  "git_commit": "8860dbacc0f032d4ad82b4a47f6fe5750553d045",
-  "utc_timestamp": "2026-10-18T14:03:20.201311+00:00",
+  "git_commit": "ce0cfc5115edd82213cc4d144e80f3160261dd78",
+  "utc_timestamp": "2026-10-18T17:04:19.805382+00:00",
   "command": "python training/fit_calibration.py"
 }

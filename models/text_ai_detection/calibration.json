@@ -15,7 +15,7 @@
     "brier_score": 0.0,
     "nll": 0.0
   },
-  "git_commit": "8860dbacc0f032d4ad82b4a47f6fe5750553d045",
-  "utc_timestamp": "2026-10-18T14:03:20.201311+00:00",
+  "git_commit": "ce0cfc5115edd82213cc4d144e80f3160261dd78",
+  "utc_timestamp": "2026-10-18T17:04:19.805382+00:00",
   "command": "python training/fit_calibration.py"
 }

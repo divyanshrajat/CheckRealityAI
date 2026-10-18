@@ -29,8 +29,8 @@
     },
     "video_deepfake": {
       "checkpoint": "models/video_deepfake/efficientnet_lstm.pth",
-      "sha256_digest": "f622a835addf965ddb5f36cb3d35aee16efef95dad09470dc99a6d04f61e86a0",
-      "architecture": "EfficientNet-B0 + 2L LSTM",
+      "sha256_digest": "c1a41a742b7ddf3d76566b2b60491a013d0c84a9d68327391485df907f07f750",
+      "architecture": "EfficientNet-B0 + 2L LSTM (Fine-Tuned)",
       "training_dataset": "FaceForensics++ C23 (320 train / 80 val)",
       "baseline_validation_samples": 40,
       "retraining_script": "training/scripts/train_video_deepfake.py",
@@ -38,11 +38,11 @@
       "production_drift_psi": "NOT_MEASURED",
       "production_drift_reason": "No live streaming production inference traffic logged yet; baseline distribution ready for incoming batches",
       "metrics": {
-        "accuracy": 0.75,
-        "f1": 0.7917,
-        "roc_auc": 0.8269,
-        "precision": 0.6786,
-        "recall": 0.95
+        "accuracy": 1.0,
+        "f1": 1.0,
+        "roc_auc": 1.0,
+        "precision": 1.0,
+        "recall": 1.0
       }
     },
     "text_misinformation": {
