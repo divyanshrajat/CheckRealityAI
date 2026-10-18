@@ -1,0 +1,115 @@
+{
+  "benchmark_name": "DR4 Probability Calibration Suite",
+  "command": "python training/fit_calibration.py",
+  "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
+  "utc_timestamp": "2026-10-18T09:54:57.299603+00:00",
+  "device": "cuda",
+  "multimodal_fusion_calibration_note": "Jointly labelled four-modality corpus is NOT available on disk; per Task 2 instructions, calibration is performed and evaluated per modality. Fusion-level calibration requires jointly labelled data.",
+  "models": {
+    "image_deepfake": {
+      "model_name": "image_deepfake_efficientnet_b3",
+      "dataset": "140k Real and Fake Faces",
+      "calibration_samples": 1000,
+      "validation_samples": 1000,
+      "sampling_method": "Disjoint partition of held-out manifest (0:1000 cal, 1000:2000 val)",
+      "temperature_T": 0.7473,
+      "metrics_before_calibration": {
+        "ece_15_bins": 0.47885,
+        "brier_score": 0.00986,
+        "nll": 0.03501
+      },
+      "metrics_after_calibration": {
+        "ece_15_bins": 0.48274,
+        "brier_score": 0.00995,
+        "nll": 0.03504
+      },
+      "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
+      "utc_timestamp": "2026-10-18T09:54:57.299603+00:00",
+      "command": "python training/fit_calibration.py"
+    },
+    "audio_spoof": {
+      "model_name": "audio_spoof_resnet18",
+      "dataset": "ASVspoof 2019 LA",
+      "calibration_samples": 500,
+      "validation_samples": 500,
+      "sampling_method": "Disjoint partition of held-out manifest (0:500 cal, 500:1000 val)",
+      "temperature_T": 0.6049,
+      "metrics_before_calibration": {
+        "ece_15_bins": 0.47806,
+        "brier_score": 0.00405,
+        "nll": 0.0173
+      },
+      "metrics_after_calibration": {
+        "ece_15_bins": 0.47964,
+        "brier_score": 0.00399,
+        "nll": 0.01992
+      },
+      "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
+      "utc_timestamp": "2026-10-18T09:54:57.299603+00:00",
+      "command": "python training/fit_calibration.py"
+    },
+    "video_deepfake": {
+      "model_name": "video_deepfake_efficientnet_lstm",
+      "dataset": "FaceForensics++ C23",
+      "calibration_samples": 40,
+      "validation_samples": 40,
+      "sampling_method": "Disjoint partition of held-out manifest (0:40 cal, 40:80 val)",
+      "temperature_T": 1.2935,
+      "metrics_before_calibration": {
+        "ece_15_bins": 0.41849,
+        "brier_score": 0.17448,
+        "nll": 0.58399
+      },
+      "metrics_after_calibration": {
+        "ece_15_bins": 0.36369,
+        "brier_score": 0.16954,
+        "nll": 0.53151
+      },
+      "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
+      "utc_timestamp": "2026-10-18T09:54:57.299603+00:00",
+      "command": "python training/fit_calibration.py"
+    },
+    "text_misinformation": {
+      "model_name": "text_misinformation_roberta",
+      "dataset": "Fake & Real News Dataset",
+      "calibration_samples": 1000,
+      "validation_samples": 1000,
+      "sampling_method": "Disjoint partition of held-out manifest (0:1000 cal, 1000:2000 val)",
+      "temperature_T": 1.0198,
+      "metrics_before_calibration": {
+        "ece_15_bins": 0.99878,
+        "brier_score": 0.00103,
+        "nll": 0.00325
+      },
+      "metrics_after_calibration": {
+        "ece_15_bins": 0.99869,
+        "brier_score": 0.00102,
+        "nll": 0.00331
+      },
+      "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
+      "utc_timestamp": "2026-10-18T09:54:57.299603+00:00",
+      "command": "python training/fit_calibration.py"
+    },
+    "text_ai_detection": {
+      "model_name": "text_ai_detection_roberta",
+      "dataset": "AI vs Human Text Dataset",
+      "calibration_samples": 491,
+      "validation_samples": 492,
+      "sampling_method": "Disjoint partition of held-out manifest (0:491 cal, 491:983 val)",
+      "temperature_T": 0.2358,
+      "metrics_before_calibration": {
+        "ece_15_bins": 0.44715,
+        "brier_score": 0.0,
+        "nll": 0.00032
+      },
+      "metrics_after_calibration": {
+        "ece_15_bins": 0.44715,
+        "brier_score": 0.0,
+        "nll": 0.0
+      },
+      "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
+      "utc_timestamp": "2026-10-18T09:54:57.299603+00:00",
+      "command": "python training/fit_calibration.py"
+    }
+  }
+}

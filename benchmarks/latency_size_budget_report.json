@@ -1,81 +1,225 @@
 {
-  "device": "cuda",
-  "iterations_per_model": 30,
-  "models": {
-    "image_efficientnet_b3": {
-      "architecture": "EfficientNet-B3 + TTA",
-      "parameters_million": 12.2,
-      "weight_size_mb": 41.4,
-      "input_resolution": "224x224 RGB",
-      "latencies_ms": {
-        "mean": 118.4,
-        "p50": 112.0,
-        "p95": 142.5,
-        "p99": 168.0
-      },
-      "throughput_fps": 8.4,
-      "status": "WITHIN_BUDGET (< 250ms target)"
-    },
-    "video_efficientnet_b0_lstm": {
-      "architecture": "EfficientNet-B0 + 2L LSTM",
-      "parameters_million": 5.3,
-      "weight_size_mb": 23.6,
-      "input_resolution": "16 frames x 224x224 RGB",
-      "latencies_ms": {
-        "mean": 412.0,
-        "p50": 395.0,
-        "p95": 482.0,
-        "p99": 540.0
-      },
-      "throughput_sequences_per_sec": 2.4,
-      "status": "WITHIN_BUDGET (< 800ms target)"
-    },
-    "audio_resnet18_mel": {
-      "architecture": "ResNet-18 + SpecAugment",
-      "parameters_million": 11.2,
-      "weight_size_mb": 42.7,
-      "input_resolution": "128-band Mel Spectrogram (16kHz)",
-      "latencies_ms": {
-        "mean": 68.5,
-        "p50": 64.0,
-        "p95": 86.0,
-        "p99": 98.0
-      },
-      "throughput_clips_per_sec": 14.6,
-      "status": "WITHIN_BUDGET (< 150ms target)"
-    },
-    "text_roberta_base": {
-      "architecture": "RoBERTa-base (12-head Transformer)",
-      "parameters_million": 125.0,
-      "weight_size_mb": 475.5,
-      "input_resolution": "512 max tokens",
-      "latencies_ms": {
-        "mean": 165.0,
-        "p50": 152.0,
-        "p95": 215.0,
-        "p99": 248.0
-      },
-      "throughput_articles_per_sec": 6.1,
-      "status": "WITHIN_BUDGET (< 300ms target)"
-    },
-    "bayesian_fusion_engine": {
-      "architecture": "Bayesian Gated Convex Prior + ECE Calibrator",
-      "parameters_million": 0.0,
-      "weight_size_mb": 0.05,
-      "latencies_ms": {
-        "mean": 0.42,
-        "p50": 0.38,
-        "p95": 0.75,
-        "p99": 1.1
-      },
-      "throughput_fusions_per_sec": 2380.0,
-      "status": "WITHIN_BUDGET (< 5ms target)"
-    }
+  "benchmark_name": "DR7 Latency, Parameter Count, and Size Budget Empirical Benchmark",
+  "command": "python benchmarks/benchmark_latency.py",
+  "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
+  "utc_timestamp": "2026-10-18T09:10:17.140407+00:00",
+  "random_seed": 42,
+  "hardware": {
+    "cpu": "Intel64 Family 6 Model 140 Stepping 2, GenuineIntel",
+    "gpu": "NVIDIA GeForce GTX 1650",
+    "cuda_available": true,
+    "total_ram_gb": 15.79,
+    "os": "Windows-11-10.0.26200-SP0"
   },
-  "aggregate_pipeline": {
-    "end_to_end_multimodal_quad_p95_sec": 0.92,
-    "target_sla_sec": 2.5,
-    "total_system_footprint_mb": 583.25,
-    "verdict": "FULL_BUDGET_COMPLIANCE (All modalities execute under real-time SLAs)"
+  "library_versions": {
+    "torch": "2.6.0+cu124",
+    "torchvision": "0.21.0+cu124",
+    "torchaudio": "2.6.0+cu124",
+    "transformers": "5.0.0",
+    "numpy": "2.4.2"
+  },
+  "benchmarks": {
+    "cpu": {
+      "device": "cpu",
+      "num_warmup": 10,
+      "num_timed": 100,
+      "models": {
+        "image_deepfake_efficientnet_b3": {
+          "architecture": "EfficientNet-B3 (TTA horizontal-flip)",
+          "parameter_count": 10699306,
+          "disk_size_bytes": 43356806,
+          "disk_size_mb": 41.35,
+          "input_shape": [
+            1,
+            3,
+            224,
+            224
+          ],
+          "latency_ms": {
+            "mean": 116.65,
+            "p50": 109.83,
+            "p95": 142.55,
+            "p99": 207.48
+          },
+          "peak_memory_mb": 0.01
+        },
+        "video_deepfake_efficientnet_lstm": {
+          "architecture": "EfficientNet-B0 + 2L LSTM",
+          "parameter_count": 6109310,
+          "disk_size_bytes": 24746210,
+          "disk_size_mb": 23.6,
+          "input_shape": [
+            1,
+            16,
+            3,
+            224,
+            224
+          ],
+          "latency_ms": {
+            "mean": 376.61,
+            "p50": 364.47,
+            "p95": 474.71,
+            "p99": 525.65
+          },
+          "peak_memory_mb": 0.01
+        },
+        "audio_spoof_resnet18": {
+          "architecture": "ResNet-18 (Mel-Spectrogram)",
+          "parameter_count": 11177538,
+          "disk_size_bytes": 44789242,
+          "disk_size_mb": 42.71,
+          "input_shape": [
+            1,
+            3,
+            128,
+            157
+          ],
+          "latency_ms": {
+            "mean": 14.73,
+            "p50": 14.6,
+            "p95": 17.02,
+            "p99": 19.54
+          },
+          "peak_memory_mb": 0.01
+        },
+        "text_misinformation_roberta": {
+          "architecture": "RoBERTa-base (Misinformation)",
+          "parameter_count": 124647170,
+          "disk_size_bytes": 502173418,
+          "disk_size_mb": 478.91,
+          "input_token_length": 512,
+          "latency_ms": {
+            "mean": 476.72,
+            "p50": 468.64,
+            "p95": 582.4,
+            "p99": 643.77
+          },
+          "peak_memory_mb": 0.05
+        },
+        "text_ai_detection_roberta": {
+          "architecture": "RoBERTa-base (AI Detection)",
+          "parameter_count": 124647170,
+          "disk_size_bytes": 502173344,
+          "disk_size_mb": 478.91,
+          "input_token_length": 512,
+          "latency_ms": {
+            "mean": 478.92,
+            "p50": 472.52,
+            "p95": 568.44,
+            "p99": 631.59
+          },
+          "peak_memory_mb": 0.04
+        }
+      }
+    },
+    "gpu": {
+      "device": "cuda:0",
+      "num_warmup": 10,
+      "num_timed": 100,
+      "models": {
+        "image_deepfake_efficientnet_b3": {
+          "architecture": "EfficientNet-B3 (TTA horizontal-flip)",
+          "parameter_count": 10699306,
+          "disk_size_bytes": 43356806,
+          "disk_size_mb": 41.35,
+          "input_shape": [
+            1,
+            3,
+            224,
+            224
+          ],
+          "latency_ms": {
+            "mean": 33.33,
+            "p50": 29.4,
+            "p95": 49.93,
+            "p99": 76.24
+          },
+          "peak_memory_mb": 65.49
+        },
+        "video_deepfake_efficientnet_lstm": {
+          "architecture": "EfficientNet-B0 + 2L LSTM",
+          "parameter_count": 6109310,
+          "disk_size_bytes": 24746210,
+          "disk_size_mb": 23.6,
+          "input_shape": [
+            1,
+            16,
+            3,
+            224,
+            224
+          ],
+          "latency_ms": {
+            "mean": 29.91,
+            "p50": 29.91,
+            "p95": 30.11,
+            "p99": 30.23
+          },
+          "peak_memory_mb": 242.96
+        },
+        "audio_spoof_resnet18": {
+          "architecture": "ResNet-18 (Mel-Spectrogram)",
+          "parameter_count": 11177538,
+          "disk_size_bytes": 44789242,
+          "disk_size_mb": 42.71,
+          "input_shape": [
+            1,
+            3,
+            128,
+            157
+          ],
+          "latency_ms": {
+            "mean": 3.39,
+            "p50": 3.32,
+            "p95": 4.03,
+            "p99": 4.73
+          },
+          "peak_memory_mb": 152.56
+        },
+        "text_misinformation_roberta": {
+          "architecture": "RoBERTa-base (Misinformation)",
+          "parameter_count": 124647170,
+          "disk_size_bytes": 502173418,
+          "disk_size_mb": 478.91,
+          "input_token_length": 512,
+          "latency_ms": {
+            "mean": 63.72,
+            "p50": 63.54,
+            "p95": 64.59,
+            "p99": 65.83
+          },
+          "peak_memory_mb": 621.18
+        },
+        "text_ai_detection_roberta": {
+          "architecture": "RoBERTa-base (AI Detection)",
+          "parameter_count": 124647170,
+          "disk_size_bytes": 502173344,
+          "disk_size_mb": 478.91,
+          "input_token_length": 512,
+          "latency_ms": {
+            "mean": 63.88,
+            "p50": 63.81,
+            "p95": 64.55,
+            "p99": 64.78
+          },
+          "peak_memory_mb": 1097.92
+        }
+      }
+    },
+    "fusion_engine": {
+      "num_calls": 10000,
+      "input_modalities": [
+        "video",
+        "audio",
+        "image",
+        "text"
+      ],
+      "latency_ms": {
+        "mean": 0.0452,
+        "p50": 0.0392,
+        "p95": 0.0722,
+        "p99": 0.1205
+      },
+      "throughput_calls_per_sec": 21904.7
+    }
   }
 }

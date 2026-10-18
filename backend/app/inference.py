@@ -45,8 +45,12 @@ def predict_image(image_path: str):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img_t = image_transform(img).unsqueeze(0).to(device)
     with torch.no_grad():
-        out = model(img_t)
-        prob = torch.softmax(out, dim=1)[0, 1].item() # probability of Fake
+        out1 = model(img_t)
+        # Horizontal-flip Test-Time Augmentation (TTA)
+        out2 = model(torch.flip(img_t, dims=[3]))
+        prob1 = torch.softmax(out1, dim=1)[0, 1]
+        prob2 = torch.softmax(out2, dim=1)[0, 1]
+        prob = ((prob1 + prob2) / 2.0).item() # average TTA probability of Fake
     return {"fake_probability": prob, "label": "Fake" if prob > 0.5 else "Real"}
 
 # --- TEXT INFERENCE ---

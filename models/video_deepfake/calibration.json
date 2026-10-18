@@ -1,0 +1,21 @@
+{
+  "model_name": "video_deepfake_efficientnet_lstm",
+  "dataset": "FaceForensics++ C23",
+  "calibration_samples": 40,
+  "validation_samples": 40,
+  "sampling_method": "Disjoint partition of held-out manifest (0:40 cal, 40:80 val)",
+  "temperature_T": 1.2935,
+  "metrics_before_calibration": {
+    "ece_15_bins": 0.41849,
+    "brier_score": 0.17448,
+    "nll": 0.58399
+  },
+  "metrics_after_calibration": {
+    "ece_15_bins": 0.36369,
+    "brier_score": 0.16954,
+    "nll": 0.53151
+  },
+  "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
+  "utc_timestamp": "2026-10-18T09:54:57.299603+00:00",
+  "command": "python training/fit_calibration.py"
+}

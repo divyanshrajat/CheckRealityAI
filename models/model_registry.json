@@ -1,52 +1,64 @@
 {
-  "registry_version": "v1.2.0",
-  "semantic_versioning": "Active",
-  "drift_trigger_protocol": "PSI > 0.25 Automated Trigger",
+  "registry_title": "CheckReality AI - Model Registry & Version Lineage",
+  "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
+  "utc_timestamp": "2026-10-18T10:20:42.650860+00:00",
+  "drift_detection_method": "Population Stability Index (PSI) and Scipy Kolmogorov-Smirnov (KS) two-sample test against models/<model>/baseline_posteriors.npy",
+  "retraining_protocol": "If PSI > 0.25 or KS p < 0.05, a retraining request is appended to models/retraining_queue.log",
   "models": {
     "audio_spoof": {
-      "version": "v1.2.0",
       "checkpoint": "models/audio_spoof/audio_cnn.pth",
-      "architecture": "ResNet-18 (2D CNN) + SpecAugment",
-      "dataset_provenance": "ASVspoof 2019 LA (4k train / 1k val)",
-      "immutable_metrics": "models/audio_spoof/metrics.json",
+      "sha256_digest": "78ef487d21c6d03bea9040a3a128c2ed9d6ff2fe27461095fe164c2a71689962",
+      "architecture": "ResNet-18 (SpecAugment)",
+      "training_dataset": "ASVspoof 2019 LA (4k train / 1k val)",
+      "baseline_validation_samples": 500,
       "retraining_script": "training/scripts/train_audio_spoof.py",
-      "drift_status": "HEALTHY (PSI = 0.012)"
+      "drift_monitoring_status": "BASELINE_ESTABLISHED",
+      "production_drift_psi": "NOT_MEASURED",
+      "production_drift_reason": "No live streaming production inference traffic logged yet; baseline distribution ready for incoming batches"
     },
     "image_deepfake": {
-      "version": "v1.2.0",
       "checkpoint": "models/image_deepfake/efficientnet_b3.pth",
-      "architecture": "EfficientNet-B3 + TTA",
-      "dataset_provenance": "140k Faces Benchmark (24k train / 2k val)",
-      "immutable_metrics": "models/image_deepfake/metrics.json",
+      "sha256_digest": "c0c12d8c2ded01b0eb12b990f4c36c5227cef1218cbdbfd07757e122e095b480",
+      "architecture": "EfficientNet-B3 + TTA (horizontal-flip)",
+      "training_dataset": "140k Real and Fake Faces (24k train / 2k val)",
+      "baseline_validation_samples": 1000,
       "retraining_script": "training/scripts/train_image_deepfake.py",
-      "drift_status": "HEALTHY (PSI = 0.018)"
+      "drift_monitoring_status": "BASELINE_ESTABLISHED",
+      "production_drift_psi": "NOT_MEASURED",
+      "production_drift_reason": "No live streaming production inference traffic logged yet; baseline distribution ready for incoming batches"
     },
     "video_deepfake": {
-      "version": "v1.2.0",
       "checkpoint": "models/video_deepfake/efficientnet_lstm.pth",
+      "sha256_digest": "f622a835addf965ddb5f36cb3d35aee16efef95dad09470dc99a6d04f61e86a0",
       "architecture": "EfficientNet-B0 + 2L LSTM",
-      "dataset_provenance": "FaceForensics++ C23 (3.2k train / 400 val)",
-      "immutable_metrics": "models/video_deepfake/metrics.json",
+      "training_dataset": "FaceForensics++ C23 (320 train / 80 val)",
+      "baseline_validation_samples": 40,
       "retraining_script": "training/scripts/train_video_deepfake.py",
-      "drift_status": "HEALTHY (PSI = 0.015)"
+      "drift_monitoring_status": "BASELINE_ESTABLISHED",
+      "production_drift_psi": "NOT_MEASURED",
+      "production_drift_reason": "No live streaming production inference traffic logged yet; baseline distribution ready for incoming batches"
     },
     "text_misinformation": {
-      "version": "v1.2.0",
       "checkpoint": "models/text_misinformation/model.safetensors",
-      "architecture": "RoBERTa-base (125M params)",
-      "dataset_provenance": "Sanitized Fake/True News (8k train / 2k val)",
-      "immutable_metrics": "models/text_misinformation/metrics.json",
+      "sha256_digest": "482c91f100e8d2504800d7edc79bd9600579c7e917ac89d0c13b9d3066a057e6",
+      "architecture": "RoBERTa-base",
+      "training_dataset": "Fake & Real News Dataset (8k train / 2k val)",
+      "baseline_validation_samples": 1000,
       "retraining_script": "training/scripts/train_text_misinformation.py",
-      "drift_status": "HEALTHY (PSI = 0.009)"
+      "drift_monitoring_status": "BASELINE_ESTABLISHED",
+      "production_drift_psi": "NOT_MEASURED",
+      "production_drift_reason": "No live streaming production inference traffic logged yet; baseline distribution ready for incoming batches"
     },
     "text_ai_detection": {
-      "version": "v1.2.0",
-      "checkpoint": "models/text_ai/model.safetensors",
-      "architecture": "RoBERTa-base Sequence Classifier",
-      "dataset_provenance": "Sanitized Human vs LLM (4k train / 983 val)",
-      "immutable_metrics": "models/text_ai/metrics.json",
+      "checkpoint": "models/text_ai_detection/model.safetensors",
+      "sha256_digest": "4fd73bf435f30b060e859e9165da6811eec9807fd00076b2bfe030916fed60f2",
+      "architecture": "RoBERTa-base",
+      "training_dataset": "AI vs Human Text Dataset (4k train / 983 val)",
+      "baseline_validation_samples": 492,
       "retraining_script": "training/scripts/train_text_ai_detection.py",
-      "drift_status": "HEALTHY (PSI = 0.005)"
+      "drift_monitoring_status": "BASELINE_ESTABLISHED",
+      "production_drift_psi": "NOT_MEASURED",
+      "production_drift_reason": "No live streaming production inference traffic logged yet; baseline distribution ready for incoming batches"
     }
   }
 }

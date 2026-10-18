@@ -27,7 +27,7 @@ B.Tech Major Project (July – December 2026) · Developed by **Divyansh Rajat**
    - [Official Single-Page A4 Forensic Audit Certificate](#72-official-single-page-a4-forensic-audit-certificate-printableforensicreporttsx)
 8. [Security, Evidence Integrity & Privacy Model](#8-security-evidence-integrity--privacy-model)
 9. [Verification, Testing & Integration Suite](#9-verification-testing--integration-suite)
-10. [Research Compliance & Design Requirements Status (DR1–DR8: 100% Fully Met)](#10-research-compliance--design-requirements-status-dr1dr8-100-fully-met)
+10. [Research Compliance & Design Requirements Status (DR1–DR8)](#10-research-compliance--design-requirements-status-dr1dr8)
 11. [Current Status, Limitations & Out of Scope](#11-current-status-limitations--out-of-scope)
 12. [Future Scope and Roadmap](#12-future-scope-and-roadmap)
 13. [Documentation Directory](#13-documentation-directory)
@@ -608,20 +608,20 @@ INTEGRATION TEST SUMMARY: 5/5 SUITES PASSED
 
 ---
 
-## 10. Research Compliance & Design Requirements Status (DR1–DR8: 100% Fully Met)
+## 10. Research Compliance & Design Requirements Status (DR1–DR8)
 
-CheckReality AI has been evaluated against academic and technical design requirements (`DR1` through `DR8`). All 8 requirements are **100% Fully Met** through production modules, mathematical formulations, and empirical verification benchmarks:
+The table below documents the empirically measured compliance status of CheckReality AI across all 8 Design Requirements (`DR1`–`DR8`). Status follows strictly from empirical runs and artifacts on disk; unmeasured external items are explicitly marked `NOT_MEASURED`.
 
-| DR | Requirement (gap) | Initial Review | Final Production Status | Implementation & Benchmark Reference |
-|---|---|---|---|---|
-| **DR1** | Uniform modality interface (G1) | Met | **Fully Met** | Standardized `DetectionResult` schema across all 5 models; fusion & XAI decoupled via unified adapter pattern (`ml/adapters/base.py`). |
-| **DR2** | Intermediate cross-modal attention fusion (G1, G2) | Not met | **Fully Met** | Implemented `CrossModalAttentionFusion` (`ml/fusion/attention.py`) utilizing Multi-Head Cross-Attention (MHCA) across projection tokens with missing-modality key-padding masks, alongside intermediate temporal LSTM fusion for video. |
-| **DR3** | Modality gating and missing-modality semantics (G2, G4) | Partly met | **Fully Met** | Implemented dynamic entropy-based reliability gating (`ml/fusion/gating.py`), certainty scaling (+25% boost), and automated evaluation across all $2^4 - 1 = 15$ power-set subset combinations. |
-| **DR4** | Calibrated confidence (G5) | Not met | **Fully Met** | Implemented `ProbabilityCalibrator` (`ml/fusion/calibration.py`) supporting Platt scaling, Temperature scaling, Expected Calibration Error ($\text{ECE} < 0.02$), and Brier score verification ($B < 0.01$). |
-| **DR5** | Two-layer explanation (G5) | Partly met | **Fully Met** | Formalized two-layer XAI (`ml/fusion/engine.py`): **Layer 1** provides modality-native feature saliency (Grad-CAM, token attribution, Mel-saliency); **Layer 2** provides quantitative cross-modal marginal Shapley/sensitivity attribution ($\Delta \Phi_m$). |
-| **DR6** | Cross-dataset evaluation as primary protocol (G3) | Not met | **Fully Met** | Implemented automated cross-domain evaluation harness (`training/eval_cross_dataset.py`) benchmarking against Celeb-DF v2, FF++ C40, In-the-Wild Audio, and severe noise corruptions (`models/cross_dataset_benchmark.json`). |
-| **DR7** | Latency and size budgets (G6) | Partly met | **Fully Met** | Empirical benchmark harness (`benchmarks/benchmark_latency.py`) profiles P50, P95, and P99 latency bounds, parameter budgets (< 150M params), and memory footprints (`benchmarks/latency_size_budget_report.json`). |
-| **DR8** | Retraining and versioning path (G7) | Partly met | **Fully Met** | Implemented statistical distribution drift monitor (`ml/monitoring/drift_detector.py`) using Population Stability Index (PSI) and Kolmogorov-Smirnov (KS) tests to automatically trigger retraining pipelines when $\text{PSI} > 0.25$ (`models/model_registry.json`). |
+| DR | Requirement (gap) | Status | Evidence File | Produced by Command | Date |
+|---|---|---|---|---|---|
+| **DR1** | Uniform modality interface (G1) | **Met** | `ml/adapters/base.py`, `backend/app/inference.py` | `python backend/test_integration.py` | 2026-10-18 |
+| **DR2** | Intermediate cross-modal attention fusion (G1, G2) | **Not met** | `ml/fusion/attention.py` | Code inspection (Architecture implemented with key-padding mask; left untrained/unused because jointly labelled 4-modality corpus is not available) | 2026-10-18 |
+| **DR3** | Modality gating and missing-modality semantics (G2, G4) | **Partly met** | `benchmarks/subset_coverage_report.json` | `python ml/fusion/gating.py` (Weight enumeration verified across all 15 power-set subsets; AUC evaluated on synthetic pairings; no naturally co-occurring multimodal corpus) | 2026-10-18 |
+| **DR4** | Calibrated confidence (G5) | **Partly met** | `models/calibration_benchmark.json`, `models/*/calibration.json` | `python training/fit_calibration.py` (Per-modality temperature $T$ fit on disjoint calibration split and evaluated on validation split with 15-bin ECE/Brier/NLL; fusion-level calibration NOT_MEASURED due to lack of jointly labelled 4-modality data) | 2026-10-18 |
+| **DR5** | Two-layer explanation (G5) | **Met** | `ml/fusion/engine.py`, `backend/app/inference.py` | `python backend/test_integration.py` (Layer 1: native feature saliency via Grad-CAM, token attribution, acoustic Mel saliency; Layer 2: signed weighted-deviation cross-modal attribution) | 2026-10-18 |
+| **DR6** | Cross-dataset evaluation as primary protocol (G3) | **Partly met** | `models/cross_dataset_benchmark.json` | `python training/eval_cross_dataset.py` (Real perturbation stress tests measured: JPEG Q=50, 8kHz telephony codec downsampling, 25% video frame dropout, 5% text typos; external cross-corpora Celeb-DF v2, FF++ C40, In-the-Wild, and LIAR marked NOT_MEASURED because not present on disk) | 2026-10-18 |
+| **DR7** | Latency and size budgets (G6) | **Met** | `benchmarks/latency_size_budget_report.json` | `python benchmarks/benchmark_latency.py` (Empirical P50, P95, P99 latencies, parameter counts, disk footprints, and peak memory measured on CPU and GPU across 100 timed runs per model and 10,000 fusion calls) | 2026-10-18 |
+| **DR8** | Retraining and versioning path (G7) | **Partly met** | `models/model_registry.json`, `models/retraining_queue.log` | `python ml/monitoring/drift_detector.py` (Baseline validation posteriors saved, KS-test and PSI drift detector implemented with retraining queue logging; live production streaming drift marked NOT_MEASURED pending traffic) | 2026-10-18 |
 
 ---
 

@@ -1,89 +1,120 @@
 {
-  "benchmark_protocol": "Cross-Dataset & Adversarial Perturbation Evaluation (DR6)",
-  "status": "MET / FULLY MET",
-  "evaluations": {
-    "image_deepfake": {
-      "in_distribution": {
-        "dataset": "140k Real & Fake Faces Benchmark",
-        "accuracy": 0.994,
-        "roc_auc": 0.9998
-      },
-      "cross_dataset_transfer": {
-        "dataset": "Celeb-DF v2 Transfer Subset",
-        "accuracy": 0.948,
-        "roc_auc": 0.976,
-        "retention_rate": "95.4%"
-      },
-      "compression_robustness": {
-        "perturbation": "JPEG Quality Factor Q=50",
-        "accuracy": 0.932,
-        "roc_auc": 0.965
-      }
+  "benchmark_name": "DR6 Cross-Dataset Generalisation and Perturbation Suite",
+  "command": "python training/eval_cross_dataset.py",
+  "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
+  "utc_timestamp": "2026-10-18T10:13:02.083380+00:00",
+  "random_seed": 42,
+  "device": "cuda",
+  "unmeasured_external_datasets": {
+    "video_celeb_df_v2": {
+      "status": "NOT_MEASURED",
+      "reason": "Celeb-DF v2 requires formal Data Use Agreement (DUA) and was not downloaded in the local repository."
     },
-    "video_deepfake": {
-      "in_distribution": {
-        "dataset": "FaceForensics++ C23 (Standard Compression)",
-        "accuracy": 0.9925,
-        "roc_auc": 0.9994
-      },
-      "cross_dataset_transfer": {
-        "dataset": "FaceForensics++ C40 (Extreme Compression)",
-        "accuracy": 0.916,
-        "roc_auc": 0.952,
-        "retention_rate": "92.3%"
-      },
-      "temporal_jitter_robustness": {
-        "perturbation": "Random Frame Dropout (25%)",
-        "accuracy": 0.941,
-        "roc_auc": 0.968
-      }
+    "video_ffpp_c40": {
+      "status": "NOT_MEASURED",
+      "reason": "FaceForensics++ C40 extreme-compression subset was not downloaded locally; only C23 is present on disk."
     },
-    "audio_spoof": {
-      "in_distribution": {
-        "dataset": "ASVspoof 2019 Logical Access (LA)",
-        "accuracy": 0.996,
-        "roc_auc": 0.9999
-      },
-      "cross_dataset_transfer": {
-        "dataset": "In-the-Wild Neural Voice Clones (ElevenLabs/VALL-E)",
-        "accuracy": 0.951,
-        "roc_auc": 0.979,
-        "retention_rate": "95.5%"
-      },
-      "codec_robustness": {
-        "perturbation": "MP3 Compression at 64 kbps (Telephone Codec)",
-        "accuracy": 0.938,
-        "roc_auc": 0.969
-      }
+    "audio_in_the_wild": {
+      "status": "NOT_MEASURED",
+      "reason": "In-the-Wild (Mueller et al. 2022) / ASVspoof 2021 DF external evaluation audio corpus was not downloaded locally."
     },
-    "text_misinformation": {
-      "in_distribution": {
-        "dataset": "Sanitized Fake & True News Corpus",
-        "accuracy": 0.9995,
-        "roc_auc": 1.0
-      },
-      "cross_dataset_transfer": {
-        "dataset": "Social Media Microblog Headlines",
-        "accuracy": 0.962,
-        "roc_auc": 0.984,
-        "retention_rate": "96.2%"
-      }
-    },
-    "text_ai_detection": {
-      "in_distribution": {
-        "dataset": "Sanitized Human vs. LLM Text Benchmark",
-        "accuracy": 1.0,
-        "roc_auc": 1.0
-      },
-      "cross_dataset_transfer": {
-        "dataset": "GPT-4o & Claude 3.5 Sonnet Technical Essays",
-        "accuracy": 0.984,
-        "roc_auc": 0.996,
-        "retention_rate": "98.4%"
-      }
+    "text_liar_corpus": {
+      "status": "NOT_MEASURED",
+      "reason": "LIAR / FakeNewsNet external cross-dataset news corpus was not downloaded in the local repository."
     }
   },
-  "mean_cross_dataset_accuracy": 0.9562,
-  "mean_cross_dataset_retention": "95.5%",
-  "conclusion": "Models maintain over 91%+ accuracy under extreme domain shifts and compression, fully validating cross-dataset generalization robustness."
+  "measured_real_perturbation_benchmarks": {
+    "image_jpeg_q50": {
+      "test_name": "Image JPEG Q=50 Compression Robustness",
+      "model": "EfficientNet-B3 (TTA)",
+      "sample_count": 500,
+      "sampling_method": "First 500 images of held-out validation manifest",
+      "clean_baseline_metrics": {
+        "accuracy": 0.986,
+        "precision": 0.972,
+        "recall": 1.0,
+        "f1": 0.9858,
+        "roc_auc": 0.9997,
+        "eer": 0.008
+      },
+      "perturbed_metrics_jpeg_q50": {
+        "accuracy": 0.846,
+        "precision": 0.7594,
+        "recall": 1.0,
+        "f1": 0.8632,
+        "roc_auc": 0.9902,
+        "eer": 0.054
+      },
+      "delta_auc": -0.0095
+    },
+    "audio_8khz_codec": {
+      "test_name": "Audio Telephony 8kHz Codec Downsampling Robustness",
+      "model": "ResNet-18 (SpecAugment)",
+      "sample_count": 300,
+      "sampling_method": "First 300 audio clips of held-out validation manifest",
+      "clean_baseline_metrics": {
+        "accuracy": 0.9967,
+        "precision": 0.9934,
+        "recall": 1.0,
+        "f1": 0.9967,
+        "roc_auc": 1.0,
+        "eer": 0.0067
+      },
+      "perturbed_metrics_8khz_codec": {
+        "accuracy": 0.95,
+        "precision": 0.9927,
+        "recall": 0.9067,
+        "f1": 0.9477,
+        "roc_auc": 0.9897,
+        "eer": 0.0433
+      },
+      "delta_auc": -0.0103
+    },
+    "video_frame_dropout_25pct": {
+      "test_name": "Video 25% Temporal Frame Dropout Robustness",
+      "model": "EfficientNet-B0 + 2L LSTM",
+      "sample_count": 80,
+      "sampling_method": "All 80 video validation sequences (16 frames each)",
+      "clean_baseline_metrics": {
+        "accuracy": 0.75,
+        "precision": 0.6786,
+        "recall": 0.95,
+        "f1": 0.7917,
+        "roc_auc": 0.8269,
+        "eer": 0.2875
+      },
+      "perturbed_metrics_25pct_dropout": {
+        "accuracy": 0.7625,
+        "precision": 0.6842,
+        "recall": 0.975,
+        "f1": 0.8041,
+        "roc_auc": 0.8412,
+        "eer": 0.275
+      },
+      "delta_auc": 0.0143
+    },
+    "text_typo_noise_5pct": {
+      "test_name": "Text 5% Typo / Character Noise Injection Robustness",
+      "model": "RoBERTa-base (Misinformation)",
+      "sample_count": 500,
+      "sampling_method": "First 500 news texts of held-out validation manifest",
+      "clean_baseline_metrics": {
+        "accuracy": 0.962,
+        "precision": 1.0,
+        "recall": 0.9246,
+        "f1": 0.9608,
+        "roc_auc": 0.9999,
+        "eer": 0.002
+      },
+      "perturbed_metrics_5pct_typos": {
+        "accuracy": 0.974,
+        "precision": 0.9509,
+        "recall": 1.0,
+        "f1": 0.9749,
+        "roc_auc": 0.9999,
+        "eer": 0.008
+      },
+      "delta_auc": 0.0
+    }
+  }
 }

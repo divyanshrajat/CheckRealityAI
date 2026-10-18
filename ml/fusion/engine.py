@@ -78,14 +78,14 @@ def generate_forensic_synthesis(
     parts.append(f"Overall forensic verdict: {unified_label.upper()} with unified confidence of {unified_conf:.1f}% ({risk} Risk).")
     return " ".join(parts)
 
-from ml.fusion.calibration import default_calibrator
+from ml.fusion.calibration import TemperatureCalibrator, load_model_calibration
 from ml.fusion.gating import ModalityGatingManager
 
 def compute_cross_modal_attribution(normalized_inputs: Dict[str, float], gated_weights: Dict[str, float]) -> Dict[str, float]:
     """
-    Computes Layer-2 Cross-Modal Attribution (Marginal Contribution Decomposition):
+    Computes Layer-2 Cross-Modal Attribution via Signed Weighted-Deviation Attribution:
     Quantifies the directional percentage push (+ towards Fake, - towards Real)
-    exerted by each active modality on the final decision.
+    exerted by each active modality on the final decision relative to the neutral 0.5 boundary.
     """
     deviations = {m: (p - 0.5) * gated_weights.get(m, 0.25) for m, p in normalized_inputs.items()}
     total_dev = sum(abs(v) for v in deviations.values())
@@ -95,17 +95,18 @@ def compute_cross_modal_attribution(normalized_inputs: Dict[str, float], gated_w
 
 def multimodal_fusion(inputs: Dict[str, float]) -> Dict[str, Any]:
     """
-    Production-grade Multimodal Fusion Engine (Fully Met DR2, DR3, DR4, DR5):
-    Combines predictions from audio, image, video, and text using calibrated Bayesian reliability gating,
-    temperature-scaled Platt calibration, and Layer-2 cross-modal attribution.
+    Multimodal Fusion Engine:
+    Combines predictions from available modalities using reliability-weighted averaging
+    with dynamic certainty gating and signed weighted-deviation cross-modal attribution.
+    Per-model calibration metrics are loaded from disk (models/<model>/calibration.json).
+    Fusion-level calibration requires jointly labelled multimodal data (not available on disk).
     """
     if not inputs:
         return {
             "unified_fake_probability": 0.0,
             "unified_confidence": 100.0,
             "calibrated_confidence": 100.0,
-            "brier_calibration_score": 0.0084,
-            "expected_calibration_error": 0.0142,
+            "fusion_calibration_status": "NOT_CALIBRATED_AT_FUSION_LEVEL: Requires jointly labelled 4-modality corpus",
             "unified_label": "Real",
             "modality_contributions": {},
             "cross_modal_attribution": {},
@@ -118,31 +119,36 @@ def multimodal_fusion(inputs: Dict[str, float]) -> Dict[str, Any]:
     normalized_inputs = {mod: normalize_probability(prob) for mod, prob in inputs.items()}
     gated_weights = ModalityGatingManager.compute_gated_weights(list(normalized_inputs.keys()), normalized_inputs)
     
-    # Calculate weighted Bayesian expectation
+    # Calculate reliability-weighted average score
     weighted_sum = sum(normalized_inputs[m] * gated_weights.get(m, 0.25) for m in normalized_inputs)
     unified_score = normalize_probability(weighted_sum)
     
-    # Apply formal Platt & Temperature Confidence Calibration (DR4)
-    calibrated_score = default_calibrator.calibrate_probability(unified_score)
-    
     unified_label = "Fake" if unified_score > 0.5 else "Real"
     raw_confidence = float(round((unified_score if unified_score > 0.5 else (1.0 - unified_score)) * 100.0, 1))
-    calibrated_confidence = float(round((calibrated_score if calibrated_score > 0.5 else (1.0 - calibrated_score)) * 100.0, 1))
     
-    # Layer-2 Cross-Modal Attribution (DR5)
+    # Layer-2 Signed Weighted-Deviation Cross-Modal Attribution (DR5)
     attribution = compute_cross_modal_attribution(normalized_inputs, gated_weights)
     
     agreement = compute_cross_modal_agreement(normalized_inputs)
     risk = compute_risk_severity(unified_score, agreement, len(normalized_inputs))
     summary = generate_forensic_synthesis(unified_score, unified_label, normalized_inputs, agreement, risk)
     
-    return {
+    # Read real per-model calibration metrics from disk if present
+    per_model_calibration = {}
+    for mod in normalized_inputs.keys():
+        cal_data = load_model_calibration(mod)
+        if cal_data:
+            per_model_calibration[mod] = {
+                "temperature": cal_data.get("temperature_T"),
+                "ece_after": cal_data.get("metrics_after_calibration", {}).get("ece_15_bins"),
+                "brier_after": cal_data.get("metrics_after_calibration", {}).get("brier_score")
+            }
+    
+    result = {
         "unified_fake_probability": round(unified_score, 4),
         "unified_confidence": raw_confidence,
-        "calibrated_fake_probability": round(calibrated_score, 4),
-        "calibrated_confidence": calibrated_confidence,
-        "brier_calibration_score": 0.0084,
-        "expected_calibration_error": 0.0142,
+        "calibrated_confidence": raw_confidence,
+        "fusion_calibration_status": "NOT_CALIBRATED_AT_FUSION_LEVEL: Requires jointly labelled 4-modality corpus",
         "unified_label": unified_label,
         "modality_contributions": {k: round(v, 4) for k, v in normalized_inputs.items()},
         "cross_modal_attribution": attribution,
@@ -151,6 +157,10 @@ def multimodal_fusion(inputs: Dict[str, float]) -> Dict[str, Any]:
         "cross_modal_agreement": agreement,
         "forensic_summary": summary
     }
+    if per_model_calibration:
+        result["per_model_calibration"] = per_model_calibration
+        
+    return result
 
 # Backward compatibility alias
 def fuse_results(modality_results: list) -> Dict[str, Any]:

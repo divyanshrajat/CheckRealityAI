@@ -1,0 +1,21 @@
+{
+  "model_name": "text_ai_detection_roberta",
+  "dataset": "AI vs Human Text Dataset",
+  "calibration_samples": 491,
+  "validation_samples": 492,
+  "sampling_method": "Disjoint partition of held-out manifest (0:491 cal, 491:983 val)",
+  "temperature_T": 0.2358,
+  "metrics_before_calibration": {
+    "ece_15_bins": 0.44715,
+    "brier_score": 0.0,
+    "nll": 0.00032
+  },
+  "metrics_after_calibration": {
+    "ece_15_bins": 0.44715,
+    "brier_score": 0.0,
+    "nll": 0.0
+  },
+  "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
+  "utc_timestamp": "2026-10-18T09:54:57.299603+00:00",
+  "command": "python training/fit_calibration.py"
+}

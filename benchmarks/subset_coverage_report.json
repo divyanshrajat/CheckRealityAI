@@ -1,0 +1,448 @@
+{
+  "benchmark_name": "DR3 Subset Coverage & Missing Modality Semantics Report",
+  "command": "python ml/fusion/gating.py",
+  "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
+  "utc_timestamp": "2026-10-18T10:19:01.854170+00:00",
+  "subset_coverage_check": {
+    "check_name": "DR3 Modality Subset Coverage Check",
+    "total_subsets": 15,
+    "coverage_rule": "w_m' = w_m / sum_{j in Present} w_j",
+    "subsets": [
+      {
+        "subset": "VIDEO",
+        "num_modalities": 1,
+        "active_modalities": [
+          "video"
+        ],
+        "convex_weights": {
+          "video": 1.0
+        },
+        "weight_sum": 1.0,
+        "status": "VALID_COVERAGE",
+        "missing_modalities": [
+          "audio",
+          "image",
+          "text"
+        ]
+      },
+      {
+        "subset": "AUDIO",
+        "num_modalities": 1,
+        "active_modalities": [
+          "audio"
+        ],
+        "convex_weights": {
+          "audio": 1.0
+        },
+        "weight_sum": 1.0,
+        "status": "VALID_COVERAGE",
+        "missing_modalities": [
+          "video",
+          "image",
+          "text"
+        ]
+      },
+      {
+        "subset": "IMAGE",
+        "num_modalities": 1,
+        "active_modalities": [
+          "image"
+        ],
+        "convex_weights": {
+          "image": 1.0
+        },
+        "weight_sum": 1.0,
+        "status": "VALID_COVERAGE",
+        "missing_modalities": [
+          "video",
+          "audio",
+          "text"
+        ]
+      },
+      {
+        "subset": "TEXT",
+        "num_modalities": 1,
+        "active_modalities": [
+          "text"
+        ],
+        "convex_weights": {
+          "text": 1.0
+        },
+        "weight_sum": 1.0,
+        "status": "VALID_COVERAGE",
+        "missing_modalities": [
+          "video",
+          "audio",
+          "image"
+        ]
+      },
+      {
+        "subset": "AUDIO+VIDEO",
+        "num_modalities": 2,
+        "active_modalities": [
+          "video",
+          "audio"
+        ],
+        "convex_weights": {
+          "video": 0.5833,
+          "audio": 0.4167
+        },
+        "weight_sum": 1.0,
+        "status": "VALID_COVERAGE",
+        "missing_modalities": [
+          "image",
+          "text"
+        ]
+      },
+      {
+        "subset": "IMAGE+VIDEO",
+        "num_modalities": 2,
+        "active_modalities": [
+          "video",
+          "image"
+        ],
+        "convex_weights": {
+          "video": 0.5833,
+          "image": 0.4167
+        },
+        "weight_sum": 1.0,
+        "status": "VALID_COVERAGE",
+        "missing_modalities": [
+          "audio",
+          "text"
+        ]
+      },
+      {
+        "subset": "TEXT+VIDEO",
+        "num_modalities": 2,
+        "active_modalities": [
+          "video",
+          "text"
+        ],
+        "convex_weights": {
+          "video": 0.7,
+          "text": 0.3
+        },
+        "weight_sum": 1.0,
+        "status": "VALID_COVERAGE",
+        "missing_modalities": [
+          "audio",
+          "image"
+        ]
+      },
+      {
+        "subset": "AUDIO+IMAGE",
+        "num_modalities": 2,
+        "active_modalities": [
+          "audio",
+          "image"
+        ],
+        "convex_weights": {
+          "audio": 0.5,
+          "image": 0.5
+        },
+        "weight_sum": 1.0,
+        "status": "VALID_COVERAGE",
+        "missing_modalities": [
+          "video",
+          "text"
+        ]
+      },
+      {
+        "subset": "AUDIO+TEXT",
+        "num_modalities": 2,
+        "active_modalities": [
+          "audio",
+          "text"
+        ],
+        "convex_weights": {
+          "audio": 0.625,
+          "text": 0.375
+        },
+        "weight_sum": 1.0,
+        "status": "VALID_COVERAGE",
+        "missing_modalities": [
+          "video",
+          "image"
+        ]
+      },
+      {
+        "subset": "IMAGE+TEXT",
+        "num_modalities": 2,
+        "active_modalities": [
+          "image",
+          "text"
+        ],
+        "convex_weights": {
+          "image": 0.625,
+          "text": 0.375
+        },
+        "weight_sum": 1.0,
+        "status": "VALID_COVERAGE",
+        "missing_modalities": [
+          "video",
+          "audio"
+        ]
+      },
+      {
+        "subset": "AUDIO+IMAGE+VIDEO",
+        "num_modalities": 3,
+        "active_modalities": [
+          "video",
+          "audio",
+          "image"
+        ],
+        "convex_weights": {
+          "video": 0.4118,
+          "audio": 0.2941,
+          "image": 0.2941
+        },
+        "weight_sum": 1.0,
+        "status": "VALID_COVERAGE",
+        "missing_modalities": [
+          "text"
+        ]
+      },
+      {
+        "subset": "AUDIO+TEXT+VIDEO",
+        "num_modalities": 3,
+        "active_modalities": [
+          "video",
+          "audio",
+          "text"
+        ],
+        "convex_weights": {
+          "video": 0.4667,
+          "audio": 0.3333,
+          "text": 0.2
+        },
+        "weight_sum": 1.0,
+        "status": "VALID_COVERAGE",
+        "missing_modalities": [
+          "image"
+        ]
+      },
+      {
+        "subset": "IMAGE+TEXT+VIDEO",
+        "num_modalities": 3,
+        "active_modalities": [
+          "video",
+          "image",
+          "text"
+        ],
+        "convex_weights": {
+          "video": 0.4667,
+          "image": 0.3333,
+          "text": 0.2
+        },
+        "weight_sum": 1.0,
+        "status": "VALID_COVERAGE",
+        "missing_modalities": [
+          "audio"
+        ]
+      },
+      {
+        "subset": "AUDIO+IMAGE+TEXT",
+        "num_modalities": 3,
+        "active_modalities": [
+          "audio",
+          "image",
+          "text"
+        ],
+        "convex_weights": {
+          "audio": 0.3846,
+          "image": 0.3846,
+          "text": 0.2308
+        },
+        "weight_sum": 1.0,
+        "status": "VALID_COVERAGE",
+        "missing_modalities": [
+          "video"
+        ]
+      },
+      {
+        "subset": "AUDIO+IMAGE+TEXT+VIDEO",
+        "num_modalities": 4,
+        "active_modalities": [
+          "video",
+          "audio",
+          "image",
+          "text"
+        ],
+        "convex_weights": {
+          "video": 0.35,
+          "audio": 0.25,
+          "image": 0.25,
+          "text": 0.15
+        },
+        "weight_sum": 1.0,
+        "status": "VALID_COVERAGE",
+        "missing_modalities": []
+      }
+    ]
+  },
+  "synthetic_paired_bundle_evaluation": {
+    "evaluation_name": "DR3 Synthetic-Paired Bundle Robustness Evaluation",
+    "note": "Bundles are SYNTHETIC PAIRINGS of per-modality validation samples; not naturally co-occurring multimodal files.",
+    "num_bundles": 40,
+    "bundle_ground_truth_distribution": {
+      "total": 40,
+      "fake_count": 34,
+      "real_count": 6
+    },
+    "subsets": [
+      {
+        "subset": "VIDEO",
+        "num_modalities": 1,
+        "active_modalities": [
+          "video"
+        ],
+        "measured_auc": 0.7794,
+        "measured_accuracy": 0.675
+      },
+      {
+        "subset": "AUDIO",
+        "num_modalities": 1,
+        "active_modalities": [
+          "audio"
+        ],
+        "measured_auc": 0.7157,
+        "measured_accuracy": 0.625
+      },
+      {
+        "subset": "IMAGE",
+        "num_modalities": 1,
+        "active_modalities": [
+          "image"
+        ],
+        "measured_auc": 0.7598,
+        "measured_accuracy": 0.525
+      },
+      {
+        "subset": "TEXT",
+        "num_modalities": 1,
+        "active_modalities": [
+          "text"
+        ],
+        "measured_auc": 0.5686,
+        "measured_accuracy": 0.15
+      },
+      {
+        "subset": "AUDIO+VIDEO",
+        "num_modalities": 2,
+        "active_modalities": [
+          "video",
+          "audio"
+        ],
+        "measured_auc": 0.9363,
+        "measured_accuracy": 0.6
+      },
+      {
+        "subset": "IMAGE+VIDEO",
+        "num_modalities": 2,
+        "active_modalities": [
+          "video",
+          "image"
+        ],
+        "measured_auc": 0.8676,
+        "measured_accuracy": 0.575
+      },
+      {
+        "subset": "TEXT+VIDEO",
+        "num_modalities": 2,
+        "active_modalities": [
+          "video",
+          "text"
+        ],
+        "measured_auc": 0.7745,
+        "measured_accuracy": 0.5
+      },
+      {
+        "subset": "AUDIO+IMAGE",
+        "num_modalities": 2,
+        "active_modalities": [
+          "audio",
+          "image"
+        ],
+        "measured_auc": 0.8431,
+        "measured_accuracy": 0.65
+      },
+      {
+        "subset": "AUDIO+TEXT",
+        "num_modalities": 2,
+        "active_modalities": [
+          "audio",
+          "text"
+        ],
+        "measured_auc": 0.8088,
+        "measured_accuracy": 0.625
+      },
+      {
+        "subset": "IMAGE+TEXT",
+        "num_modalities": 2,
+        "active_modalities": [
+          "image",
+          "text"
+        ],
+        "measured_auc": 0.7255,
+        "measured_accuracy": 0.525
+      },
+      {
+        "subset": "AUDIO+IMAGE+VIDEO",
+        "num_modalities": 3,
+        "active_modalities": [
+          "video",
+          "audio",
+          "image"
+        ],
+        "measured_auc": 0.951,
+        "measured_accuracy": 0.625
+      },
+      {
+        "subset": "AUDIO+TEXT+VIDEO",
+        "num_modalities": 3,
+        "active_modalities": [
+          "video",
+          "audio",
+          "text"
+        ],
+        "measured_auc": 0.9314,
+        "measured_accuracy": 0.45
+      },
+      {
+        "subset": "IMAGE+TEXT+VIDEO",
+        "num_modalities": 3,
+        "active_modalities": [
+          "video",
+          "image",
+          "text"
+        ],
+        "measured_auc": 0.8676,
+        "measured_accuracy": 0.375
+      },
+      {
+        "subset": "AUDIO+IMAGE+TEXT",
+        "num_modalities": 3,
+        "active_modalities": [
+          "audio",
+          "image",
+          "text"
+        ],
+        "measured_auc": 0.8627,
+        "measured_accuracy": 0.375
+      },
+      {
+        "subset": "AUDIO+IMAGE+TEXT+VIDEO",
+        "num_modalities": 4,
+        "active_modalities": [
+          "video",
+          "audio",
+          "image",
+          "text"
+        ],
+        "measured_auc": 0.951,
+        "measured_accuracy": 0.55
+      }
+    ]
+  }
+}
