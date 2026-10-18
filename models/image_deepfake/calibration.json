@@ -6,16 +6,16 @@
   "sampling_method": "Disjoint partition of held-out manifest (0:1000 cal, 1000:2000 val)",
   "temperature_T": 0.7473,
   "metrics_before_calibration": {
-    "ece_15_bins": 0.47885,
+    "ece_15_bins": 0.01646,
     "brier_score": 0.00986,
     "nll": 0.03501
   },
   "metrics_after_calibration": {
-    "ece_15_bins": 0.48274,
+    "ece_15_bins": 0.01465,
     "brier_score": 0.00995,
     "nll": 0.03504
   },
-  "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
-  "utc_timestamp": "2026-10-18T09:54:57.299603+00:00",
+  "git_commit": "8860dbacc0f032d4ad82b4a47f6fe5750553d045",
+  "utc_timestamp": "2026-10-18T14:03:20.201311+00:00",
   "command": "python training/fit_calibration.py"
 }

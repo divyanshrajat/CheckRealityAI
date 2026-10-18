@@ -1,4 +1,5 @@
 import os
+from typing import Optional, Dict, Any, List
 import torch
 import torch.nn as nn
 import numpy as np
@@ -51,7 +52,9 @@ def predict_image(image_path: str):
         prob1 = torch.softmax(out1, dim=1)[0, 1]
         prob2 = torch.softmax(out2, dim=1)[0, 1]
         prob = ((prob1 + prob2) / 2.0).item() # average TTA probability of Fake
-    return {"fake_probability": prob, "label": "Fake" if prob > 0.5 else "Real"}
+        # Extract 1536-dim feature representation for cross-modal fusion
+        feat_1536 = model.avgpool(model.features(img_t)).flatten(1).cpu()
+    return {"fake_probability": prob, "label": "Fake" if prob > 0.5 else "Real", "_feature_vector": feat_1536}
 
 # --- TEXT INFERENCE ---
 text_misinfo_model = None
@@ -87,12 +90,16 @@ def predict_text(text: str):
             prob_mis = torch.softmax(out_mis, dim=1)[0, 1].item()
             result["misinformation_probability"] = prob_mis
             result["misinformation_label"] = "Fake/Misinfo" if prob_mis > 0.5 else "Real"
+            if hasattr(misinfo_model, "roberta"):
+                result["_feature_vector"] = misinfo_model.roberta(**inputs).last_hidden_state[:, 0, :].cpu()
         
         if ai_model:
             out_ai = ai_model(**inputs).logits
             prob_ai = torch.softmax(out_ai, dim=1)[0, 1].item()
             result["ai_generated_probability"] = prob_ai
             result["ai_generated_label"] = "AI Generated" if prob_ai > 0.5 else "Human Written"
+            if "_feature_vector" not in result and hasattr(ai_model, "roberta"):
+                result["_feature_vector"] = ai_model.roberta(**inputs).last_hidden_state[:, 0, :].cpu()
             
     return result
 
@@ -217,7 +224,17 @@ def predict_audio(audio_path: str):
         with torch.no_grad():
             out = model(tensor_spec)
             prob = torch.softmax(out, dim=1)[0, 1].item()
-        return {"spoof_probability": prob, "label": "Spoof/Fake" if prob > 0.5 else "Real/Bonafide"}
+            # Extract 512-dim feature embedding from ResNet-18 avgpool
+            x = model.conv1(tensor_spec)
+            x = model.bn1(x)
+            x = model.relu(x)
+            x = model.maxpool(x)
+            x = model.layer1(x)
+            x = model.layer2(x)
+            x = model.layer3(x)
+            x = model.layer4(x)
+            feat_512 = model.avgpool(x).flatten(1).cpu()
+        return {"spoof_probability": prob, "label": "Spoof/Fake" if prob > 0.5 else "Real/Bonafide", "_feature_vector": feat_512}
     finally:
         if temp_extracted_wav and os.path.exists(temp_extracted_wav):
             try:
@@ -281,9 +298,15 @@ def predict_video(video_path: str):
     
     video_tensor = torch.stack(frames, dim=0).unsqueeze(0).to(device)
     with torch.no_grad():
-        out = model(video_tensor)
+        b, t, c, h, w = video_tensor.size()
+        v_flat = video_tensor.view(-1, c, h, w)
+        spat = model.backbone(v_flat)
+        spat = spat.view(b, t, -1)
+        lstm_out, _ = model.lstm(spat)
+        feat_256 = lstm_out[:, -1, :].cpu()
+        out = model.fc(feat_256.to(device))
         prob = torch.softmax(out, dim=1)[0, 1].item()
-    return {"fake_probability": prob, "label": "Fake" if prob > 0.5 else "Real"}
+    return {"fake_probability": prob, "label": "Fake" if prob > 0.5 else "Real", "_feature_vector": feat_256}
 
 def run_inference(modality: str, file_path: str = None, text_content: str = None):
     if modality == 'multimodal':
@@ -320,13 +343,14 @@ def run_inference(modality: str, file_path: str = None, text_content: str = None
     return {"error": "Invalid modality"}
 
 # --- MULTIMODAL FUSION ---
-def multimodal_fusion(inputs: dict):
+def multimodal_fusion(inputs: dict, features: Optional[dict] = None):
     """
     Combines probabilities from multiple modalities into a single unified deepfake score
-    using the calibrated Bayesian Multimodal Fusion Engine.
+    using the calibrated Bayesian Multimodal Fusion Engine and evaluates intermediate
+    Cross-Modal Attention Fusion if feature embeddings are supplied.
     """
     from ml.fusion.engine import multimodal_fusion as fusion_engine
-    return fusion_engine(inputs)
+    return fusion_engine(inputs, features=features)
 
 # --- EXPLAINABLE AI (XAI) ---
 def generate_xai_explanation(modality: str, file_path: str = None, text_content: str = None):

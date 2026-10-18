@@ -1,21 +1,29 @@
 {
-    "accuracy": 0.9925,
-    "precision": 0.9901,
-    "recall": 0.995,
-    "f1": 0.9925,
-    "roc_auc": 0.9994,
-    "fpr": 0.0099,
-    "fnr": 0.005,
+    "accuracy": 0.75,
+    "precision": 0.6786,
+    "recall": 0.95,
+    "f1": 0.7917,
+    "roc_auc": 0.8269,
+    "fpr": 0.45,
+    "fnr": 0.05,
+    "confusion_matrix": [
+        [
+            22,
+            18
+        ],
+        [
+            2,
+            38
+        ]
+    ],
     "model_name": "efficientnet_lstm_video",
-    "version": "3.0-ultra-finetuned-99",
-    "dataset": "FaceForensics++ C23 (Clean, Temporal Calibrated)",
-    "training_samples": 3200,
-    "validation_samples": 400,
+    "dataset": "FaceForensics++ C23",
+    "training_samples": 320,
+    "validation_samples": 80,
     "classes": [
         "real",
         "fake"
     ],
-    "seed": 42,
-    "gpu": "cuda",
-    "last_updated": "2026-10-12 23:43:04"
+    "device": "cuda",
+    "last_updated": "2026-10-18 19:31:16"
 }

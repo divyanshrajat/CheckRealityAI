@@ -331,9 +331,11 @@ def calibrate_text_misinformation(git_hash: str, utc_now: str) -> dict:
     df = pd.read_csv(manifest_path)
     val_df = df[df["split"] == "val"].reset_index(drop=True)
 
-    # Disjoint split: 0:1000 for CALIBRATION, 1000:2000 for VALIDATION
-    cal_df = val_df.iloc[:1000].reset_index(drop=True)
-    eval_df = val_df.iloc[1000:].reset_index(drop=True)
+    # Stratified balanced split: 500 real + 500 fake for CALIBRATION, remainder for VALIDATION
+    real_df = val_df[val_df["label"].astype(str).str.lower().isin(["real", "0"])].reset_index(drop=True)
+    fake_df = val_df[val_df["label"].astype(str).str.lower().isin(["fake", "1"])].reset_index(drop=True)
+    cal_df = pd.concat([real_df.iloc[:500], fake_df.iloc[:500]]).sample(frac=1.0, random_state=42).reset_index(drop=True)
+    eval_df = pd.concat([real_df.iloc[500:], fake_df.iloc[500:]]).sample(frac=1.0, random_state=42).reset_index(drop=True)
 
     model_dir = os.path.join(PROJECT_ROOT, "models", "text_misinformation")
     tok = AutoTokenizer.from_pretrained(model_dir)

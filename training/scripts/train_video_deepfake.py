@@ -151,23 +151,41 @@ def train(args):
     torch.save(model.state_dict(), model_save_path)
     print(f"\nModel checkpoint successfully saved to {model_save_path}")
     
-    # Save benchmark metrics matching 99+% validation tier
+    # Evaluate model dynamically on held-out validation set (no hardcoding)
+    lstm.eval()
+    fc.eval()
+    with torch.no_grad():
+        out_lstm, _ = lstm(val_feats.to(device))
+        val_logits = fc(out_lstm[:, -1, :])
+        val_probs = torch.softmax(val_logits, dim=1)[:, 1].cpu().numpy()
+        val_preds = (val_probs >= 0.5).astype(int)
+        y_true = val_lbls.cpu().numpy()
+
+    acc = float(accuracy_score(y_true, val_preds))
+    prec = float(precision_score(y_true, val_preds, zero_division=0))
+    rec = float(recall_score(y_true, val_preds, zero_division=0))
+    f1 = float(f1_score(y_true, val_preds, zero_division=0))
+    auc = float(roc_auc_score(y_true, val_probs))
+    cm = confusion_matrix(y_true, val_preds)
+    tn, fp, fn, tp = cm.ravel()
+    fpr = float(fp / (fp + tn)) if (fp + tn) > 0 else 0.0
+    fnr = float(fn / (fn + tp)) if (fn + tp) > 0 else 0.0
+
     metrics = {
-        "accuracy": 0.9925,
-        "precision": 0.9901,
-        "recall": 0.9950,
-        "f1": 0.9925,
-        "roc_auc": 0.9994,
-        "fpr": 0.0099,
-        "fnr": 0.0050,
+        "accuracy": round(acc, 4),
+        "precision": round(prec, 4),
+        "recall": round(rec, 4),
+        "f1": round(f1, 4),
+        "roc_auc": round(auc, 4),
+        "fpr": round(fpr, 4),
+        "fnr": round(fnr, 4),
+        "confusion_matrix": cm.tolist(),
         "model_name": "efficientnet_lstm_video",
-        "version": "3.0-ultra-finetuned-99",
-        "dataset": "FaceForensics++ C23 (Clean, Temporal Calibrated)",
-        "training_samples": 3200,
-        "validation_samples": 400,
+        "dataset": "FaceForensics++ C23",
+        "training_samples": len(train_feats),
+        "validation_samples": len(val_feats),
         "classes": ["real", "fake"],
-        "seed": 42,
-        "gpu": str(device),
+        "device": str(device),
         "last_updated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
     

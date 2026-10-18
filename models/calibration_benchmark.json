@@ -1,8 +1,8 @@
 {
   "benchmark_name": "DR4 Probability Calibration Suite",
   "command": "python training/fit_calibration.py",
-  "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
-  "utc_timestamp": "2026-10-18T09:54:57.299603+00:00",
+  "git_commit": "8860dbacc0f032d4ad82b4a47f6fe5750553d045",
+  "utc_timestamp": "2026-10-18T14:03:20.201311+00:00",
   "device": "cuda",
   "multimodal_fusion_calibration_note": "Jointly labelled four-modality corpus is NOT available on disk; per Task 2 instructions, calibration is performed and evaluated per modality. Fusion-level calibration requires jointly labelled data.",
   "models": {
@@ -14,17 +14,17 @@
       "sampling_method": "Disjoint partition of held-out manifest (0:1000 cal, 1000:2000 val)",
       "temperature_T": 0.7473,
       "metrics_before_calibration": {
-        "ece_15_bins": 0.47885,
+        "ece_15_bins": 0.01646,
         "brier_score": 0.00986,
         "nll": 0.03501
       },
       "metrics_after_calibration": {
-        "ece_15_bins": 0.48274,
+        "ece_15_bins": 0.01465,
         "brier_score": 0.00995,
         "nll": 0.03504
       },
-      "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
-      "utc_timestamp": "2026-10-18T09:54:57.299603+00:00",
+      "git_commit": "8860dbacc0f032d4ad82b4a47f6fe5750553d045",
+      "utc_timestamp": "2026-10-18T14:03:20.201311+00:00",
       "command": "python training/fit_calibration.py"
     },
     "audio_spoof": {
@@ -35,17 +35,17 @@
       "sampling_method": "Disjoint partition of held-out manifest (0:500 cal, 500:1000 val)",
       "temperature_T": 0.6049,
       "metrics_before_calibration": {
-        "ece_15_bins": 0.47806,
+        "ece_15_bins": 0.00568,
         "brier_score": 0.00405,
         "nll": 0.0173
       },
       "metrics_after_calibration": {
-        "ece_15_bins": 0.47964,
+        "ece_15_bins": 0.00564,
         "brier_score": 0.00399,
         "nll": 0.01992
       },
-      "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
-      "utc_timestamp": "2026-10-18T09:54:57.299603+00:00",
+      "git_commit": "8860dbacc0f032d4ad82b4a47f6fe5750553d045",
+      "utc_timestamp": "2026-10-18T14:03:20.201311+00:00",
       "command": "python training/fit_calibration.py"
     },
     "video_deepfake": {
@@ -56,17 +56,17 @@
       "sampling_method": "Disjoint partition of held-out manifest (0:40 cal, 40:80 val)",
       "temperature_T": 1.2935,
       "metrics_before_calibration": {
-        "ece_15_bins": 0.41849,
+        "ece_15_bins": 0.16254,
         "brier_score": 0.17448,
         "nll": 0.58399
       },
       "metrics_after_calibration": {
-        "ece_15_bins": 0.36369,
+        "ece_15_bins": 0.12759,
         "brier_score": 0.16954,
         "nll": 0.53151
       },
-      "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
-      "utc_timestamp": "2026-10-18T09:54:57.299603+00:00",
+      "git_commit": "8860dbacc0f032d4ad82b4a47f6fe5750553d045",
+      "utc_timestamp": "2026-10-18T14:03:20.201311+00:00",
       "command": "python training/fit_calibration.py"
     },
     "text_misinformation": {
@@ -75,19 +75,19 @@
       "calibration_samples": 1000,
       "validation_samples": 1000,
       "sampling_method": "Disjoint partition of held-out manifest (0:1000 cal, 1000:2000 val)",
-      "temperature_T": 1.0198,
+      "temperature_T": 0.9471,
       "metrics_before_calibration": {
-        "ece_15_bins": 0.99878,
-        "brier_score": 0.00103,
-        "nll": 0.00325
+        "ece_15_bins": 0.05826,
+        "brier_score": 0.03177,
+        "nll": 0.12134
       },
       "metrics_after_calibration": {
-        "ece_15_bins": 0.99869,
-        "brier_score": 0.00102,
-        "nll": 0.00331
+        "ece_15_bins": 0.05593,
+        "brier_score": 0.03174,
+        "nll": 0.12227
       },
-      "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
-      "utc_timestamp": "2026-10-18T09:54:57.299603+00:00",
+      "git_commit": "8860dbacc0f032d4ad82b4a47f6fe5750553d045",
+      "utc_timestamp": "2026-10-18T14:03:20.201311+00:00",
       "command": "python training/fit_calibration.py"
     },
     "text_ai_detection": {
@@ -98,17 +98,17 @@
       "sampling_method": "Disjoint partition of held-out manifest (0:491 cal, 491:983 val)",
       "temperature_T": 0.2358,
       "metrics_before_calibration": {
-        "ece_15_bins": 0.44715,
+        "ece_15_bins": 0.00032,
         "brier_score": 0.0,
         "nll": 0.00032
       },
       "metrics_after_calibration": {
-        "ece_15_bins": 0.44715,
+        "ece_15_bins": 0.0,
         "brier_score": 0.0,
         "nll": 0.0
       },
-      "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
-      "utc_timestamp": "2026-10-18T09:54:57.299603+00:00",
+      "git_commit": "8860dbacc0f032d4ad82b4a47f6fe5750553d045",
+      "utc_timestamp": "2026-10-18T14:03:20.201311+00:00",
       "command": "python training/fit_calibration.py"
     }
   }

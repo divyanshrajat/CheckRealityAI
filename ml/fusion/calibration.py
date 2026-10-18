@@ -104,7 +104,8 @@ def compute_ece(predictions: List[float], ground_truth: List[int], n_bins: int =
 
         bin_size = int(np.sum(in_bin))
         if bin_size > 0:
-            bin_acc = float(np.mean(targets[in_bin] == (preds[in_bin] >= 0.5)))
+            # Empirical probability of positive class in bin vs. mean predicted probability
+            bin_acc = float(np.mean(targets[in_bin]))
             bin_conf = float(np.mean(preds[in_bin]))
             ece += (bin_size / total_samples) * abs(bin_acc - bin_conf)
 

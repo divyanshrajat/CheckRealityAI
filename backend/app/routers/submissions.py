@@ -25,27 +25,41 @@ async def process_submission_background(submission_id: ObjectId, modality: str, 
         
         # Multimodal Fusion (Single or Multi)
         fusion_inputs = {}
+        fusion_features = {}
         if modality == 'multimodal' and isinstance(inference_result, dict):
             for m, res in inference_result.items():
                 if isinstance(res, dict):
                     if 'fake_probability' in res: fusion_inputs[m] = res['fake_probability']
                     elif 'spoof_probability' in res: fusion_inputs[m] = res['spoof_probability']
                     elif 'misinformation_probability' in res: fusion_inputs[m] = res['misinformation_probability']
+                    if '_feature_vector' in res: fusion_features[m] = res['_feature_vector']
         else:
             if 'fake_probability' in inference_result:
                 fusion_inputs[modality] = inference_result['fake_probability']
+                if '_feature_vector' in inference_result: fusion_features[modality] = inference_result['_feature_vector']
                 if 'audio_stream' in inference_result and isinstance(inference_result['audio_stream'], dict):
                     if 'spoof_probability' in inference_result['audio_stream']:
                         fusion_inputs['audio'] = inference_result['audio_stream']['spoof_probability']
+                    if '_feature_vector' in inference_result['audio_stream']:
+                        fusion_features['audio'] = inference_result['audio_stream']['_feature_vector']
             elif 'spoof_probability' in inference_result:
                 fusion_inputs[modality] = inference_result['spoof_probability']
+                if '_feature_vector' in inference_result: fusion_features[modality] = inference_result['_feature_vector']
             elif 'misinformation_probability' in inference_result:
                 prob = inference_result['misinformation_probability']
                 if 'ai_generated_probability' in inference_result:
                     prob = max(prob, inference_result['ai_generated_probability'])
                 fusion_inputs[modality] = prob
+                if '_feature_vector' in inference_result: fusion_features[modality] = inference_result['_feature_vector']
             
-        fusion_result = multimodal_fusion(fusion_inputs)
+        fusion_result = multimodal_fusion(fusion_inputs, features=fusion_features)
+        
+        # Remove internal tensor objects before database persistence
+        if isinstance(inference_result, dict):
+            for k, v in inference_result.items():
+                if isinstance(v, dict):
+                    v.pop('_feature_vector', None)
+            inference_result.pop('_feature_vector', None)
         
         final_result = {
             "inference": inference_result,
