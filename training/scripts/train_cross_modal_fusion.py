@@ -66,7 +66,9 @@ def extract_modality_features():
     # 1. Video Features (using precomputed backbone features + LSTM)
     print("-> Extracting Video features from FaceForensics++...")
     vid_model = get_video_model()
-    vid_feats_path = os.path.join(BASE_DIR, 'training', 'manifests', 'video_val_feats.pt')
+    vid_feats_path = os.path.join(BASE_DIR, 'training', 'manifests', 'video_train_feats.pt')
+    if not os.path.exists(vid_feats_path):
+        vid_feats_path = os.path.join(BASE_DIR, 'training', 'manifests', 'video_val_feats.pt')
     if os.path.exists(vid_feats_path):
         data = torch.load(vid_feats_path, map_location=device, weights_only=False)
         if isinstance(data, tuple):
@@ -76,8 +78,8 @@ def extract_modality_features():
             vid_backbone_feats = data['features']
             vid_labels = data['labels'].cpu().numpy()
         with torch.no_grad():
-            lstm_out, _ = vid_model.lstm(vid_backbone_feats.to(device))
-            video_feats = lstm_out[:, -1, :].cpu().numpy()  # [N, 256]
+            _, context = vid_model.forward_from_features(vid_backbone_feats.to(device))
+            video_feats = context.cpu().numpy()  # [N, 256]
     else:
         # Fallback to random projection of synthetic video sequence
         video_feats = np.random.randn(80, 256).astype(np.float32)

@@ -1,29 +1,35 @@
 {
-    "accuracy": 1.0,
-    "precision": 1.0,
+    "accuracy": 0.996875,
+    "precision": 0.9937888198757764,
     "recall": 1.0,
-    "f1": 1.0,
+    "f1": 0.9968847352024922,
     "roc_auc": 1.0,
-    "fpr": 0.0,
+    "fpr": 0.00625,
     "fnr": 0.0,
+    "calibrated_threshold": 0.5,
     "confusion_matrix": [
         [
-            40,
-            0
+            159,
+            1
         ],
         [
             0,
-            40
+            160
         ]
     ],
     "model_name": "efficientnet_lstm_video",
     "dataset": "FaceForensics++ C23",
-    "training_samples": 320,
-    "validation_samples": 80,
-    "classes": [
-        "real",
-        "fake"
-    ],
+    "splits": {
+        "training_samples": 1280,
+        "validation_samples": 320,
+        "total_samples": 1600
+    },
+    "training_samples": 1280,
+    "validation_samples": 320,
     "device": "cuda",
-    "last_updated": "2026-10-18 22:33:19"
+    "gpu_model": "NVIDIA GeForce GTX 1650",
+    "pytorch_version": "2.6.0+cu124",
+    "inference_latency_ms": 0.07597804069519043,
+    "training_duration_sec": 16.574482202529907,
+    "last_updated": "2026-10-20 01:02:32"
 }

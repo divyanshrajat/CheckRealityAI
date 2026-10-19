@@ -1,17 +1,17 @@
 {
   "model_name": "cross_modal_attention_fusion",
-  "temperature_T": 1.0999,
+  "temperature_T": 1.4491,
   "calibration_samples": 75,
   "evaluation_samples": 75,
   "metrics_before_calibration": {
-    "ece_15_bins": 0.09318,
-    "brier_score": 0.11524,
-    "nll": 0.36302
+    "ece_15_bins": 0.08716,
+    "brier_score": 0.06786,
+    "nll": 0.22212
   },
   "metrics_after_calibration": {
-    "ece_15_bins": 0.08393,
-    "brier_score": 0.11321,
-    "nll": 0.35014
+    "ece_15_bins": 0.10693,
+    "brier_score": 0.0731,
+    "nll": 0.24566
   },
   "status": "CALIBRATED"
 }

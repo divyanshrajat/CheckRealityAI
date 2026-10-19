@@ -232,7 +232,13 @@ def eval_audio_codec_perturbation(sample_count: int = 300) -> dict:
 # ==============================================================================
 def eval_video_frame_dropout() -> dict:
     val_feats_path = os.path.join(PROJECT_ROOT, "training", "manifests", "video_val_feats.pt")
-    features, labels = torch.load(val_feats_path, map_location=device)
+    if os.path.exists(val_feats_path):
+        features, labels = torch.load(val_feats_path, map_location=device)
+        sampling_desc = f"Representative video validation split ({len(features)} sequences, 16 frames each)"
+    else:
+        test_feats_path = os.path.join(PROJECT_ROOT, "training", "manifests", "video_test_feats.pt")
+        features, labels = torch.load(test_feats_path, map_location=device)
+        sampling_desc = f"Strictly held-out video test split ({len(features)} sequences, 16 frames each)"
 
     model_path = os.path.join(PROJECT_ROOT, "models", "video_deepfake", "efficientnet_lstm.pth")
     model = EfficientNetLSTM()
@@ -242,8 +248,8 @@ def eval_video_frame_dropout() -> dict:
 
     # Clean inference
     with torch.no_grad():
-        lstm_out, _ = model.lstm(features)
-        clean_scores = torch.softmax(model.fc(lstm_out[:, -1, :]), dim=1)[:, 1].cpu().numpy()
+        out_c, _ = model.forward_from_features(features)
+        clean_scores = torch.softmax(out_c, dim=1)[:, 1].cpu().numpy()
 
     # Perturbed inference: Zero out 4 out of 16 frames (25% temporal dropout)
     perturbed_features = features.clone()
@@ -252,8 +258,8 @@ def eval_video_frame_dropout() -> dict:
     perturbed_features[:, drop_indices, :] = 0.0
 
     with torch.no_grad():
-        lstm_out_p, _ = model.lstm(perturbed_features)
-        pert_scores = torch.softmax(model.fc(lstm_out_p[:, -1, :]), dim=1)[:, 1].cpu().numpy()
+        out_p, _ = model.forward_from_features(perturbed_features)
+        pert_scores = torch.softmax(out_p, dim=1)[:, 1].cpu().numpy()
 
     y_true = labels.cpu().numpy().astype(int)
     clean_metrics = evaluate_binary_metrics(y_true, clean_scores)
@@ -263,7 +269,7 @@ def eval_video_frame_dropout() -> dict:
         "test_name": "Video 25% Temporal Frame Dropout Robustness",
         "model": "EfficientNet-B0 + 2L LSTM",
         "sample_count": len(y_true),
-        "sampling_method": "All 80 video validation sequences (16 frames each)",
+        "sampling_method": sampling_desc,
         "clean_baseline_metrics": clean_metrics,
         "perturbed_metrics_25pct_dropout": pert_metrics,
         "delta_auc": round(pert_metrics["roc_auc"] - clean_metrics["roc_auc"], 4)

@@ -166,17 +166,79 @@ def generate_video_gradcam(video_path: str, model: nn.Module, device: torch.devi
         Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
     
-    # Run through backbone and LSTM to find the peak activation frame
+    # Check input dimension of model
+    input_dim = getattr(getattr(model, 'lstm', None), 'input_size', 1280)
     backbone = model.backbone
-    video_tensors = torch.stack([transform(cv2.cvtColor(f, cv2.COLOR_BGR2RGB)) for f in frames_bgr]).to(device)
     
-    with torch.no_grad():
-        features = backbone(video_tensors)
-        features_seq = features.unsqueeze(0) # [1, 16, 1280]
-        lstm_out, _ = model.lstm(features_seq)
-        out_cls = model.fc(lstm_out[:, -1, :])
-        prob = torch.softmax(out_cls, dim=1)[0, 1].item() if out_cls.shape[1] > 1 else torch.sigmoid(out_cls[0]).item()
-    is_fake = prob > 0.5
+    if input_dim == 2560:
+        def _detect_face_norm(frame):
+            try:
+                small = cv2.resize(frame, (320, 240))
+                gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
+                face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+                faces = face_cascade.detectMultiScale(gray, 1.2, 3, minSize=(30, 30))
+                if len(faces) > 0:
+                    faces = sorted(faces, key=lambda b: b[2] * b[3], reverse=True)
+                    bx, by, bw, bh = faces[0]
+                    return bx / 320.0, by / 240.0, bw / 320.0, bh / 240.0
+            except Exception:
+                pass
+            return 0.28, 0.15, 0.44, 0.44
+
+        fx, fy, fw, fh = _detect_face_norm(frames_bgr[0])
+        frames_full = []
+        frames_mouth = []
+        face_boxes = []
+
+        for f in frames_bgr:
+            h, w, _ = f.shape
+            pad_w, pad_h = int(0.20 * fw * w), int(0.20 * fh * h)
+            x1, y1 = max(0, int(fx * w) - pad_w), max(0, int(fy * h) - pad_h)
+            x2, y2 = min(w, int((fx + fw) * w) + pad_w), min(h, int((fy + fh) * h) + pad_h)
+            face_boxes.append((x1, y1, x2, y2))
+            
+            crop1 = f[y1:y2, x1:x2]
+            if crop1.size > 0:
+                crop1_rgb = cv2.cvtColor(cv2.resize(crop1, (224, 224)), cv2.COLOR_BGR2RGB)
+                frames_full.append(transform(crop1_rgb))
+            else:
+                frames_full.append(torch.zeros((3, 224, 224)))
+                
+            mx1 = max(0, int((fx + 0.10 * fw) * w))
+            my1 = max(0, int((fy + 0.45 * fh) * h))
+            mx2 = min(w, int((fx + 0.90 * fw) * w))
+            my2 = min(h, int((fy + 1.05 * fh) * h))
+            crop2 = f[my1:my2, mx1:mx2]
+            if crop2.size > 0:
+                crop2_rgb = cv2.cvtColor(cv2.resize(crop2, (224, 224)), cv2.COLOR_BGR2RGB)
+                frames_mouth.append(transform(crop2_rgb))
+            else:
+                frames_mouth.append(torch.zeros((3, 224, 224)))
+
+        t_full = torch.stack(frames_full).to(device)
+        t_mouth = torch.stack(frames_mouth).to(device)
+
+        with torch.no_grad():
+            feat_full = backbone(t_full)
+            feat_mouth = backbone(t_mouth)
+            features = torch.cat([feat_full, feat_mouth], dim=-1)
+            features_seq = features.unsqueeze(0)
+            if hasattr(model, 'forward_from_features'):
+                out_cls, _ = model.forward_from_features(features_seq)
+            else:
+                lstm_out, _ = model.lstm(features_seq)
+                out_cls = model.fc(lstm_out[:, -1, :])
+            prob = torch.softmax(out_cls, dim=1)[0, 1].item() if out_cls.shape[1] > 1 else torch.sigmoid(out_cls[0]).item()
+        is_fake = prob > 0.5
+    else:
+        video_tensors = torch.stack([transform(cv2.cvtColor(f, cv2.COLOR_BGR2RGB)) for f in frames_bgr]).to(device)
+        with torch.no_grad():
+            features = backbone(video_tensors)
+            features_seq = features.unsqueeze(0)
+            lstm_out, _ = model.lstm(features_seq)
+            out_cls = model.fc(lstm_out[:, -1, :])
+            prob = torch.softmax(out_cls, dim=1)[0, 1].item() if out_cls.shape[1] > 1 else torch.sigmoid(out_cls[0]).item()
+        is_fake = prob > 0.5
 
     # Analyze frame variance along temporal sequence
     frame_variances = torch.norm(features[1:] - features[:-1], dim=1).cpu().numpy()
@@ -189,7 +251,10 @@ def generate_video_gradcam(video_path: str, model: nn.Module, device: torch.devi
     # Compute Grad-CAM on the peak frame through backbone
     target_layer = backbone.features[-1]
     grad_cam = GradCAM(backbone, target_layer)
-    peak_tensor = video_tensors[peak_idx:peak_idx+1].clone().detach()
+    if input_dim == 2560:
+        peak_tensor = t_full[peak_idx:peak_idx+1].clone().detach()
+    else:
+        peak_tensor = video_tensors[peak_idx:peak_idx+1].clone().detach()
     peak_tensor.requires_grad = True
     
     try:
@@ -207,8 +272,19 @@ def generate_video_gradcam(video_path: str, model: nn.Module, device: torch.devi
     finally:
         grad_cam.remove_hooks()
         
-    cam_resized = cv2.resize(cam_map, (w_orig, h_orig))
-    cam_uint8 = np.uint8(255 * cam_resized)
+    if input_dim == 2560 and len(face_boxes) > peak_idx:
+        x1, y1, x2, y2 = face_boxes[peak_idx]
+        full_cam = np.zeros((h_orig, w_orig), dtype=np.float32)
+        if x2 > x1 and y2 > y1:
+            face_cam = cv2.resize(cam_map, (x2 - x1, y2 - y1))
+            full_cam[y1:y2, x1:x2] = face_cam
+        else:
+            full_cam = cv2.resize(cam_map, (w_orig, h_orig))
+        cam_uint8 = np.uint8(255 * full_cam)
+    else:
+        cam_resized = cv2.resize(cam_map, (w_orig, h_orig))
+        cam_uint8 = np.uint8(255 * cam_resized)
+        
     heatmap = cv2.applyColorMap(cam_uint8, cv2.COLORMAP_JET)
     overlay = cv2.addWeighted(peak_frame_bgr, 0.6, heatmap, 0.4, 0)
     

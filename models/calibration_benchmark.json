@@ -1,8 +1,8 @@
 {
   "benchmark_name": "DR4 Probability Calibration Suite",
   "command": "python training/fit_calibration.py",
-  "git_commit": "ce0cfc5115edd82213cc4d144e80f3160261dd78",
-  "utc_timestamp": "2026-10-18T17:04:19.805382+00:00",
+  "git_commit": "7898af6ea85ed6ad6bace8f11f734eb2819e6306",
+  "utc_timestamp": "2026-10-19T19:34:32.198784+00:00",
   "device": "cuda",
   "multimodal_fusion_calibration_note": "Jointly labelled four-modality corpus is NOT available on disk; per Task 2 instructions, calibration is performed and evaluated per modality. Fusion-level calibration requires jointly labelled data.",
   "models": {
@@ -23,8 +23,8 @@
         "brier_score": 0.00995,
         "nll": 0.03504
       },
-      "git_commit": "ce0cfc5115edd82213cc4d144e80f3160261dd78",
-      "utc_timestamp": "2026-10-18T17:04:19.805382+00:00",
+      "git_commit": "7898af6ea85ed6ad6bace8f11f734eb2819e6306",
+      "utc_timestamp": "2026-10-19T19:34:32.198784+00:00",
       "command": "python training/fit_calibration.py"
     },
     "audio_spoof": {
@@ -44,29 +44,29 @@
         "brier_score": 0.00399,
         "nll": 0.01992
       },
-      "git_commit": "ce0cfc5115edd82213cc4d144e80f3160261dd78",
-      "utc_timestamp": "2026-10-18T17:04:19.805382+00:00",
+      "git_commit": "7898af6ea85ed6ad6bace8f11f734eb2819e6306",
+      "utc_timestamp": "2026-10-19T19:34:32.198784+00:00",
       "command": "python training/fit_calibration.py"
     },
     "video_deepfake": {
       "model_name": "video_deepfake_efficientnet_lstm",
       "dataset": "FaceForensics++ C23",
-      "calibration_samples": 40,
-      "validation_samples": 40,
-      "sampling_method": "Disjoint partition of held-out manifest (0:40 cal, 40:80 val)",
-      "temperature_T": 0.056,
+      "calibration_samples": 160,
+      "validation_samples": 160,
+      "sampling_method": "Disjoint partition of representative validation set (160 cal, 160 val)",
+      "temperature_T": 0.1141,
       "metrics_before_calibration": {
-        "ece_15_bins": 0.01774,
-        "brier_score": 0.00377,
-        "nll": 0.02014
+        "ece_15_bins": 0.00892,
+        "brier_score": 0.00197,
+        "nll": 0.01054
       },
       "metrics_after_calibration": {
-        "ece_15_bins": 0.0,
-        "brier_score": 0.0,
-        "nll": 0.0
+        "ece_15_bins": 0.00548,
+        "brier_score": 0.00481,
+        "nll": 0.01312
       },
-      "git_commit": "ce0cfc5115edd82213cc4d144e80f3160261dd78",
-      "utc_timestamp": "2026-10-18T17:04:19.805382+00:00",
+      "git_commit": "7898af6ea85ed6ad6bace8f11f734eb2819e6306",
+      "utc_timestamp": "2026-10-19T19:34:32.198784+00:00",
       "command": "python training/fit_calibration.py"
     },
     "text_misinformation": {
@@ -86,8 +86,8 @@
         "brier_score": 0.03174,
         "nll": 0.12227
       },
-      "git_commit": "ce0cfc5115edd82213cc4d144e80f3160261dd78",
-      "utc_timestamp": "2026-10-18T17:04:19.805382+00:00",
+      "git_commit": "7898af6ea85ed6ad6bace8f11f734eb2819e6306",
+      "utc_timestamp": "2026-10-19T19:34:32.198784+00:00",
       "command": "python training/fit_calibration.py"
     },
     "text_ai_detection": {
@@ -107,8 +107,8 @@
         "brier_score": 0.0,
         "nll": 0.0
       },
-      "git_commit": "ce0cfc5115edd82213cc4d144e80f3160261dd78",
-      "utc_timestamp": "2026-10-18T17:04:19.805382+00:00",
+      "git_commit": "7898af6ea85ed6ad6bace8f11f734eb2819e6306",
+      "utc_timestamp": "2026-10-19T19:34:32.198784+00:00",
       "command": "python training/fit_calibration.py"
     }
   }

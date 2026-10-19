@@ -144,7 +144,10 @@ class ModalityGatingManager:
         # 3. Video
         vid_post = np.load(os.path.join(PROJECT_ROOT, "models", "video_deepfake", "baseline_posteriors.npy"))
         vid_manifest = pd.read_csv(os.path.join(PROJECT_ROOT, "training", "manifests", "video_deepfake.csv"))
-        vid_labels = (vid_manifest[vid_manifest["split"] == "val"].iloc[40:]["label_id"] == 1).astype(int).values
+        vid_split = vid_manifest[vid_manifest["split"].isin(["test", "val"])]
+        if len(vid_split) == 0:
+            vid_split = vid_manifest[vid_manifest["split"] == "tune"]
+        vid_labels = (vid_split["label_id"] == 1).astype(int).values
         posteriors["video"] = vid_post[:num_bundles]
         labels["video"] = vid_labels[:num_bundles]
 

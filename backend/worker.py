@@ -14,10 +14,20 @@ celery_app = Celery(
 
 @celery_app.task
 def process_video_task(submission_id: str, filepath: str):
-    # TODO: implement video adapter processing
-    pass
+    """
+    Asynchronous Celery worker task for video deepfake detection.
+    Evaluates the video through the fine-tuned EfficientNet-B0 + BiLSTM adapter.
+    """
+    from ml.video.adapter import VideoAdapter
+    adapter = VideoAdapter()
+    return adapter.analyze(filepath)
 
 @celery_app.task
 def process_audio_task(submission_id: str, filepath: str):
-    # TODO: implement audio adapter processing
-    pass
+    """
+    Asynchronous Celery worker task for audio spoof detection.
+    Evaluates audio track through the fine-tuned ResNet-18 Log-Mel Spectrogram adapter.
+    """
+    from ml.audio.adapter import AudioAdapter
+    adapter = AudioAdapter()
+    return adapter.analyze(filepath)

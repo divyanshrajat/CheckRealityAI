@@ -245,21 +245,62 @@ def predict_audio(audio_path: str):
 
 # --- VIDEO INFERENCE ---
 video_model = None
+face_cascade_detector = None
+
+def get_face_detector():
+    global face_cascade_detector
+    if face_cascade_detector is None:
+        face_cascade_detector = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    return face_cascade_detector
+
+def detect_video_face(frame):
+    try:
+        h, w, _ = frame.shape
+        small = cv2.resize(frame, (320, 240))
+        gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
+        detector = get_face_detector()
+        faces = detector.detectMultiScale(gray, 1.2, 3, minSize=(30, 30))
+        if len(faces) > 0:
+            faces = sorted(faces, key=lambda b: b[2] * b[3], reverse=True)
+            bx, by, bw, bh = faces[0]
+            return bx / 320.0, by / 240.0, bw / 320.0, bh / 240.0
+    except Exception:
+        pass
+    return 0.28, 0.15, 0.44, 0.44
+
 class EfficientNetLSTM(nn.Module):
-    def __init__(self, hidden_dim=256, num_layers=2):
+    def __init__(self, num_classes=2, input_dim=2560, hidden_dim=128, num_layers=2):
         super(EfficientNetLSTM, self).__init__()
-        self.backbone = efficientnet_b0()
+        self.backbone = efficientnet_b0(weights=None)
         self.feature_dim = self.backbone.classifier[1].in_features
         self.backbone.classifier = nn.Identity()
-        self.lstm = nn.LSTM(input_size=self.feature_dim, hidden_size=hidden_dim, num_layers=num_layers, batch_first=True, dropout=0.1)
-        self.fc = nn.Linear(hidden_dim, 2)
-    def forward(self, x):
-        b, t, c, h, w = x.size()
-        x = x.view(-1, c, h, w)
-        features = self.backbone(x)
-        features = features.view(b, t, -1)
+        
+        ft_path = os.path.join(MODELS_DIR, 'video_deepfake', 'finetuned_b0_features.pth')
+        if os.path.exists(ft_path):
+            self.backbone.features.load_state_dict(torch.load(ft_path, map_location='cpu'))
+            
+        self.lstm = nn.LSTM(input_size=input_dim,
+                            hidden_size=hidden_dim,
+                            num_layers=num_layers,
+                            batch_first=True,
+                            bidirectional=True,
+                            dropout=0.15)
+        self.attn = nn.Sequential(
+            nn.Linear(hidden_dim * 2, 64),
+            nn.Tanh(),
+            nn.Linear(64, 1)
+        )
+        self.fc = nn.Linear(hidden_dim * 2, num_classes)
+
+    def forward_from_features(self, features):
         lstm_out, _ = self.lstm(features)
-        out = self.fc(lstm_out[:, -1, :])
+        attn_scores = torch.softmax(self.attn(lstm_out), dim=1)
+        context = (lstm_out * attn_scores).sum(dim=1)
+        out = self.fc(context)
+        return out, context
+
+    def forward(self, x):
+        out, _ = self.forward_from_features(x)
         return out
 
 video_transform = Compose([
@@ -268,49 +309,129 @@ video_transform = Compose([
     Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
+video_calibration_threshold = None
+
+def get_video_threshold():
+    global video_calibration_threshold
+    if video_calibration_threshold is None:
+        calib_path = os.path.join(MODELS_DIR, 'video_deepfake', 'calibration.json')
+        if os.path.exists(calib_path):
+            try:
+                import json
+                with open(calib_path, 'r', encoding='utf-8') as f:
+                    cdata = json.load(f)
+                    video_calibration_threshold = float(cdata.get('calibrated_threshold', 0.20))
+            except Exception:
+                video_calibration_threshold = 0.20
+        else:
+            video_calibration_threshold = 0.20
+    return video_calibration_threshold
+
 def get_video_model():
     global video_model
     if video_model is None:
-        model = EfficientNetLSTM()
         model_path = os.path.join(MODELS_DIR, 'video_deepfake', 'efficientnet_lstm.pth')
-        if os.path.exists(model_path):
-            model.load_state_dict(torch.load(model_path, map_location=device))
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Video deepfake model checkpoint not found at: {model_path}")
+        model = EfficientNetLSTM(input_dim=2560)
+        model.load_state_dict(torch.load(model_path, map_location=device))
         model.to(device)
         model.eval()
         video_model = model
     return video_model
 
 def predict_video(video_path: str):
+    import time
+    t_start = time.time()
+    
+    if not video_path or not os.path.exists(video_path):
+        return {"error": f"Video file not found: {video_path}", "fake_probability": 0.0, "label": "Unknown"}
+        
     model = get_video_model()
+    threshold = get_video_threshold()
+    
     cap = cv2.VideoCapture(video_path)
-    frames = []
+    if not cap.isOpened():
+        return {"error": f"Failed to open video file: {video_path}", "fake_probability": 0.0, "label": "Unknown"}
+        
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    if total_frames <= 0:
+        cap.release()
+        return {"error": "Video contains 0 readable frames", "fake_probability": 0.0, "label": "Unknown"}
+        
     indices = np.linspace(0, max(0, total_frames - 1), 16, dtype=int)
+    
+    frames_full = []
+    frames_int = []
+    
+    # Read first available frame to detect face location
+    ret, first_frame = cap.read()
+    if ret:
+        detected_box = detect_video_face(first_frame)
+    else:
+        detected_box = (0.28, 0.15, 0.44, 0.44)
+    fx, fy, fw, fh = detected_box
+    
+    cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
     for idx in indices:
         cap.set(cv2.CAP_PROP_POS_FRAMES, idx)
         ret, frame = cap.read()
         if ret:
             h, w, _ = frame.shape
-            cy, cx = int(h * 0.45), int(w * 0.5)
-            dy, dx = int(h * 0.35), int(w * 0.3)
-            crop = frame[max(0, cy-dy):min(h, cy+dy), max(0, cx-dx):min(w, cx+dx)]
-            crop = cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)
-            frames.append(video_transform(crop))
+            # 1. Full face with 20% margin
+            pad_w, pad_h = int(0.20 * fw * w), int(0.20 * fh * h)
+            x1, y1 = max(0, int(fx * w) - pad_w), max(0, int(fy * h) - pad_h)
+            x2, y2 = min(w, int((fx + fw) * w) + pad_w), min(h, int((fy + fh) * h) + pad_h)
+            crop1 = frame[y1:y2, x1:x2]
+            if crop1.size > 0:
+                crop1 = cv2.resize(crop1, (224, 224))
+                crop1 = cv2.cvtColor(crop1, cv2.COLOR_BGR2RGB)
+                frames_full.append(video_transform(crop1))
+            else:
+                frames_full.append(torch.zeros((3, 224, 224)))
+                
+            # 2. Targeted mouth / lower face
+            mx1 = max(0, int((fx + 0.10 * fw) * w))
+            my1 = max(0, int((fy + 0.45 * fh) * h))
+            mx2 = min(w, int((fx + 0.90 * fw) * w))
+            my2 = min(h, int((fy + 1.05 * fh) * h))
+            crop2 = frame[my1:my2, mx1:mx2]
+            if crop2.size > 0:
+                crop2 = cv2.resize(crop2, (224, 224))
+                crop2 = cv2.cvtColor(crop2, cv2.COLOR_BGR2RGB)
+                frames_int.append(video_transform(crop2))
+            else:
+                frames_int.append(torch.zeros((3, 224, 224)))
         else:
-            frames.append(torch.zeros((3, 224, 224)))
+            frames_full.append(torch.zeros((3, 224, 224)))
+            frames_int.append(torch.zeros((3, 224, 224)))
     cap.release()
     
-    video_tensor = torch.stack(frames, dim=0).unsqueeze(0).to(device)
+    t_full = torch.stack(frames_full, dim=0).unsqueeze(0).to(device)
+    t_int = torch.stack(frames_int, dim=0).unsqueeze(0).to(device)
+    
     with torch.no_grad():
-        b, t, c, h, w = video_tensor.size()
-        v_flat = video_tensor.view(-1, c, h, w)
-        spat = model.backbone(v_flat)
-        spat = spat.view(b, t, -1)
-        lstm_out, _ = model.lstm(spat)
-        feat_256 = lstm_out[:, -1, :].cpu()
-        out = model.fc(feat_256.to(device))
+        b, t, c, h, w = t_full.size()
+        f_full = model.backbone(t_full.view(-1, c, h, w)).view(b, t, -1)
+        f_int = model.backbone(t_int.view(-1, c, h, w)).view(b, t, -1)
+        dual_feats = torch.cat([f_full, f_int], dim=-1)
+        out, feat_256 = model.forward_from_features(dual_feats)
         prob = torch.softmax(out, dim=1)[0, 1].item()
-    return {"fake_probability": prob, "label": "Fake" if prob > 0.5 else "Real", "_feature_vector": feat_256}
+        feat_256 = feat_256.cpu()
+        
+    label = "Fake" if prob >= threshold else "Real"
+    confidence = prob if label == "Fake" else (1.0 - prob)
+    elapsed_ms = round((time.time() - t_start) * 1000.0, 2)
+    
+    return {
+        "fake_probability": prob,
+        "label": label,
+        "confidence": confidence,
+        "threshold": threshold,
+        "model_version": "efficientnet_b0_lstm-v2.0",
+        "inference_ms": elapsed_ms,
+        "_feature_vector": feat_256
+    }
 
 def run_inference(modality: str, file_path: str = None, text_content: str = None):
     if modality == 'multimodal':

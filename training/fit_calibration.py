@@ -265,15 +265,24 @@ def calibrate_audio_model(git_hash: str, utc_now: str) -> dict:
 def calibrate_video_model(git_hash: str, utc_now: str) -> dict:
     print("\n--- [3/5] Calibrating Video Model (EfficientNet-B0 + LSTM) ---")
     val_feats_path = os.path.join(PROJECT_ROOT, "training", "manifests", "video_val_feats.pt")
-    features, labels = torch.load(val_feats_path, map_location=device)
-    total_samples = len(labels)
-
-    # Disjoint split: 0:40 for CALIBRATION, 40:80 for VALIDATION
-    cal_feats = features[:40]
-    cal_y = labels[:40].cpu().numpy().astype(int)
-
-    val_feats = features[40:]
-    val_y = labels[40:].cpu().numpy().astype(int)
+    tune_feats_path = os.path.join(PROJECT_ROOT, "training", "manifests", "video_tune_feats.pt")
+    test_feats_path = os.path.join(PROJECT_ROOT, "training", "manifests", "video_test_feats.pt")
+    
+    if os.path.exists(val_feats_path):
+        features, labels = torch.load(val_feats_path, map_location=device)
+        cal_feats = features[:len(features)//2]
+        cal_y = labels[:len(features)//2].cpu().numpy().astype(int)
+        val_feats = features[len(features)//2:]
+        val_y = labels[len(features)//2:].cpu().numpy().astype(int)
+        sampling_desc = f"Disjoint partition of representative validation set ({len(cal_y)} cal, {len(val_y)} val)"
+    elif os.path.exists(tune_feats_path) and os.path.exists(test_feats_path):
+        cal_feats, cal_lbls = torch.load(tune_feats_path, map_location=device)
+        val_feats, val_lbls = torch.load(test_feats_path, map_location=device)
+        cal_y = cal_lbls.cpu().numpy().astype(int)
+        val_y = val_lbls.cpu().numpy().astype(int)
+        sampling_desc = f"Strict 3-Way Split: Fit on Tune split ({len(cal_y)} samples), Evaluate on Test split ({len(val_y)} samples)"
+    else:
+        raise FileNotFoundError("No video feature splits found for calibration.")
 
     model_path = os.path.join(PROJECT_ROOT, "models", "video_deepfake", "efficientnet_lstm.pth")
     model = EfficientNetLSTM()
@@ -283,8 +292,7 @@ def calibrate_video_model(git_hash: str, utc_now: str) -> dict:
 
     def get_logits(feats):
         with torch.no_grad():
-            lstm_out, _ = model.lstm(feats)
-            out = model.fc(lstm_out[:, -1, :])
+            out, _ = model.forward_from_features(feats)
             probs = torch.softmax(out, dim=1)[:, 1].cpu().numpy()
             probs = np.clip(probs, 1e-7, 1.0 - 1e-7)
             logits = np.log(probs / (1.0 - probs))
@@ -307,7 +315,7 @@ def calibrate_video_model(git_hash: str, utc_now: str) -> dict:
         "dataset": "FaceForensics++ C23",
         "calibration_samples": len(cal_y),
         "validation_samples": len(val_y),
-        "sampling_method": "Disjoint partition of held-out manifest (0:40 cal, 40:80 val)",
+        "sampling_method": sampling_desc,
         "temperature_T": round(T, 4),
         "metrics_before_calibration": eval_res["before"],
         "metrics_after_calibration": eval_res["after"],

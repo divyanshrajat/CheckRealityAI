@@ -29,20 +29,22 @@
     },
     "video_deepfake": {
       "checkpoint": "models/video_deepfake/efficientnet_lstm.pth",
-      "sha256_digest": "c1a41a742b7ddf3d76566b2b60491a013d0c84a9d68327391485df907f07f750",
-      "architecture": "EfficientNet-B0 + 2L LSTM (Fine-Tuned)",
-      "training_dataset": "FaceForensics++ C23 (320 train / 80 val)",
-      "baseline_validation_samples": 40,
+      "sha256_digest": "5e65a55c5d8dfb22e4472fe87ad233321373d8a90de8cf7cbde4dd22ff714d60",
+      "architecture": "Dual-Stream Face+Mouth EfficientNet-B0 + Attentive BiLSTM (2560-d)",
+      "training_dataset": "FaceForensics++ C23 (1280 train / 320 val; 1600 total representative subset)",
+      "baseline_validation_samples": 320,
       "retraining_script": "training/scripts/train_video_deepfake.py",
       "drift_monitoring_status": "BASELINE_ESTABLISHED",
       "production_drift_psi": "NOT_MEASURED",
       "production_drift_reason": "No live streaming production inference traffic logged yet; baseline distribution ready for incoming batches",
       "metrics": {
-        "accuracy": 1.0,
-        "f1": 1.0,
-        "roc_auc": 1.0,
-        "precision": 1.0,
-        "recall": 1.0
+        "accuracy": 0.9969,
+        "roc_auc": 1.0000,
+        "precision": 0.9938,
+        "recall": 1.0000,
+        "f1": 0.9969,
+        "fpr": 0.0063,
+        "fnr": 0.0000
       }
     },
     "text_misinformation": {
@@ -69,16 +71,16 @@
     },
     "cross_modal_fusion": {
       "checkpoint": "models/fusion/cross_modal_fusion.pth",
-      "sha256_digest": "8b2c510fcea393e05d5ca5f0beb1437f80740376a97c54f60ff05ae912d59576",
+      "sha256_digest": "5dd6002af43563be1a1e2d329de26409b9b27148905553342f1e215d941d500c",
       "architecture": "CrossModalAttentionFusion (MHA, h=4, d=128)",
       "training_dataset": "Joint Multimodal Feature Representation Pool",
       "baseline_validation_samples": 150,
       "retraining_script": "training/scripts/train_cross_modal_fusion.py",
       "drift_monitoring_status": "BASELINE_ESTABLISHED",
       "metrics": {
-        "accuracy": 0.8867,
-        "f1": 0.8777,
-        "roc_auc": 0.95
+        "accuracy": 0.9,
+        "f1": 0.8718,
+        "roc_auc": 0.9473
       }
     }
   }

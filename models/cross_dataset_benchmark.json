@@ -1,8 +1,8 @@
 {
   "benchmark_name": "DR6 Cross-Dataset Generalisation and Perturbation Suite",
   "command": "python training/eval_cross_dataset.py",
-  "git_commit": "ce0cfc5115edd82213cc4d144e80f3160261dd78",
-  "utc_timestamp": "2026-10-18T17:20:13.024039+00:00",
+  "git_commit": "7898af6ea85ed6ad6bace8f11f734eb2819e6306",
+  "utc_timestamp": "2026-10-19T19:57:21.671307+00:00",
   "random_seed": 42,
   "device": "cuda",
   "unmeasured_external_datasets": {
@@ -73,13 +73,13 @@
     "video_frame_dropout_25pct": {
       "test_name": "Video 25% Temporal Frame Dropout Robustness",
       "model": "EfficientNet-B0 + 2L LSTM",
-      "sample_count": 80,
-      "sampling_method": "All 80 video validation sequences (16 frames each)",
+      "sample_count": 320,
+      "sampling_method": "Representative video validation split (320 sequences, 16 frames each)",
       "clean_baseline_metrics": {
-        "accuracy": 1.0,
-        "precision": 1.0,
+        "accuracy": 0.9969,
+        "precision": 0.9938,
         "recall": 1.0,
-        "f1": 1.0,
+        "f1": 0.9969,
         "roc_auc": 1.0,
         "eer": 0.0
       },

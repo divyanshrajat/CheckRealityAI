@@ -23,6 +23,9 @@ ENV/
 *.pt
 *.bin
 *.ckpt
+*_backup.pth
+*.backup.pth
+scratch/
 
 # Datasets (45GB+ raw datasets - not tracked in Git)
 Datasets/
