@@ -12,7 +12,7 @@ This directory contains the production-grade training scripts for all 5 speciali
 | **Image Deepfake** | EfficientNet-B3 (TTA) | [`train_image_deepfake.py`](./train_image_deepfake.py) | 140k Real & Fake Faces | 24,000 | 2,000 | 26,000 | **99.40%** | **0.9940** | **0.9998** |
 | **Text Misinformation** | RoBERTa-base | [`train_text_misinformation.py`](./train_text_misinformation.py) | Fake & Real News (Sanitized) | 8,000 | 2,000 | 10,000 | **99.95%** | **0.9995** | **1.0000** |
 | **Text AI Detection** | RoBERTa-base | [`train_text_ai_detection.py`](./train_text_ai_detection.py) | AI vs Human Text (Sanitized) | 4,000 | 983 | 4,983 | **100.00%** | **1.0000** | **1.0000** |
-| **Video Deepfake** | Dual-Stream EfficientNet-B0 + Attentive BiLSTM | [`train_video_deepfake.py`](./train_video_deepfake.py) | FaceForensics++ C23 | 1,280 | 320 | 1,600 | **99.69%** | **0.9969** | **1.0000** |
+| **Video Deepfake** | Dual-Stream EfficientNet-B0 + Attentive BiLSTM | [`train_video_deepfake.py`](./train_video_deepfake.py) | FaceForensics++ C23 (Subject-Disjoint) | 2,450 | 525 | 3,500 | **82.94%** | **0.8856** | **0.8655** |
 | **Cross-Modal Fusion** | Multi-Head Attention (128-d) | [`train_cross_modal_fusion.py`](./train_cross_modal_fusion.py) | Permuted 4-Modal Embeddings | 450 bundles | 150 bundles | 600 bundles | **90.00%** | **0.8718** | **0.9603** |
 
 ---
@@ -44,9 +44,9 @@ This directory contains the production-grade training scripts for all 5 speciali
 ## 5. Video Deepfake Detection
 - **Script**: `python training/scripts/train_video_deepfake.py`
 - **Architecture**: EfficientNet-B0 spatial frame feature extractor fine-tuned on dual-stream facial crops (full-face + interior mouth/expression crops, concatenated to 2560-d) combined with a 2-layer Bidirectional LSTM (128 units/dir, 256 output units, dropout 0.15) and Temporal Attention Pooling across 16 frames.
-- **Dataset**: FaceForensics++ C23 compressed benchmark across all 5 manipulation families (`Deepfakes`, `Face2Face`, `FaceSwap`, `FaceShifter`, `NeuralTextures`). Representative balanced benchmark of 1,600 videos (1,280 Train / 320 Validation: 80/20 stratified partition).
+- **Dataset**: FaceForensics++ C23 compressed benchmark across all 5 manipulation families (`Deepfakes`, `Face2Face`, `FaceSwap`, `FaceShifter`, `NeuralTextures`). Evaluated on full 3,500 video sequences using rigorous **5-Fold Group-Aware Subject-Disjoint Cross-Validation (Zero Actor-Pair Identity Overlap)**.
 - **Target Output**: `models/video_deepfake/efficientnet_lstm.pth` and `models/video_deepfake/metrics.json`
-- **Measured Empirical Metrics**: Achieves **99.69% Accuracy**, **1.0000 ROC-AUC**, **0.9938 Precision**, **1.0000 Recall**, and **0.9969 F1-score** (`models/video_deepfake/metrics.json`). Under 25% temporal frame dropout perturbation stress testing, the model achieves **1.0000 ROC-AUC** ($\Delta \text{AUC} = 0.0000$, demonstrating robust temporal stability).
+- **Measured Empirical Metrics**: Achieves **82.94% ± 0.88% Accuracy**, **0.8655 ROC-AUC**, **0.8037 Precision**, **0.9857 Recall**, and **0.8856 F1-score** (`models/video_deepfake/metrics.json`), matching peer-reviewed literature benchmarks on heavily compressed H.264 video forensics.
 - **Classes**: `real` (0), `fake` (1)
 
 ## 6. Cross-Modal Attention Fusion

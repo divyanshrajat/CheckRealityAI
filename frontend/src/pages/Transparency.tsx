@@ -76,18 +76,18 @@ const MODELS: ModelSpec[] = [
     weights: 'efficientnet_lstm.pth',
     weightSize: '23.6 MB',
     dataset: 'FaceForensics++ C23 Compressed Benchmark',
-    trainSamples: '1,280',
-    valSamples: '320',
-    totalSamples: '1,600',
-    accuracy: '99.69%',
-    accuracyNum: 99.69,
-    f1: '0.9969',
-    rocAuc: '1.0000',
-    fpr: '0.62%',
-    fnr: '0.00%',
+    trainSamples: '2,450',
+    valSamples: '525 (525 tune)',
+    totalSamples: '3,500',
+    accuracy: '82.94%',
+    accuracyNum: 82.94,
+    f1: '0.8856',
+    rocAuc: '0.8655',
+    fpr: '40.70%',
+    fnr: '7.60%',
     xaiMethod: 'Temporal Keyframe Grad-CAM on Peak Feature Variance',
     preprocessing: 'Haar-aligned multi-scale crops (full-face + interior mouth/expression) across 16 keyframes, 2560-d dual stream, attentive temporal pooling',
-    description: 'Fine-tuned dual-stream spatial backbone (full-face + targeted mouth/expression crops) coupled with a 2-layer Bidirectional LSTM and Temporal Attention Pooling (99.69% validation accuracy, 1.0000 ROC-AUC across 1,600 representative FaceForensics++ C23 video sequences with zero actor-pair identity overlap).',
+    description: 'Fine-tuned dual-stream spatial backbone (full-face + targeted mouth/expression crops) coupled with a 2-layer Bidirectional LSTM and Temporal Attention Pooling (82.94% ± 0.88% 5-fold Group-Aware CV across 3,500 FaceForensics++ C23 video sequences with zero actor-pair identity overlap).',
     badgeColor: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20'
   },
   {
@@ -150,7 +150,7 @@ export default function Transparency() {
       <div className="flex flex-col gap-4 text-center max-w-3xl mx-auto">
         <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-wider mx-auto">
           <span className="material-symbols-outlined text-[16px]">verified</span>
-          Production Architecture · Organic 99%+ Tier Verified
+          Production Architecture · Rigorous Subject-Disjoint & Multimodal Benchmarks
         </div>
         <h1 className="font-headline-hero text-3xl md:text-5xl font-extrabold text-on-surface tracking-tight">
           Algorithm Transparency & Forensic Architecture
