@@ -9,16 +9,47 @@
     "calibrated_threshold": 0.5,
     "evaluation_protocol": "Representative Balanced Validation Split (FaceForensics++ C23)",
     "cross_validation_accuracy_std": 0.0031,
-    "confusion_matrix": [
-        [
-            159,
-            1
-        ],
-        [
-            0,
-            160
-        ]
-    ],
+    "protocols": {
+        "representative_balanced": {
+            "name": "Representative Balanced Validation Benchmark",
+            "dataset": "FaceForensics++ C23 (Balanced)",
+            "training_samples": 1280,
+            "validation_samples": 320,
+            "total_samples": 1600,
+            "accuracy": 0.9969,
+            "precision": 0.9938,
+            "recall": 1.0,
+            "f1": 0.9969,
+            "roc_auc": 1.0,
+            "fpr": 0.0062,
+            "fnr": 0.0,
+            "confusion_matrix": [
+                [159, 1],
+                [0, 160]
+            ],
+            "notes": "Evaluates the fine-tuned dual-stream spatial backbone (face + mouth crops) and 2-layer Attentive BiLSTM on a balanced 1:1 validation split (160 Real, 160 Fake)."
+        },
+        "full_cross_dataset_cv": {
+            "name": "Full 3,500 Video Cross-Dataset Subject-Disjoint CV",
+            "dataset": "FaceForensics++ C23 (All 5 Manipulation Families)",
+            "training_samples": 2450,
+            "validation_samples": 525,
+            "tuning_samples": 525,
+            "total_samples": 3500,
+            "accuracy": 0.8294,
+            "precision": 0.8502,
+            "recall": 0.9240,
+            "f1": 0.8856,
+            "roc_auc": 0.8655,
+            "fpr": 0.4070,
+            "fnr": 0.0760,
+            "confusion_matrix": [
+                [593, 407],
+                [190, 2310]
+            ],
+            "notes": "Evaluates cross-manipulation transfer across 5 synthesis families (Deepfakes, Face2Face, FaceSwap, FaceShifter, NeuralTextures) under severe class imbalance (1,000 Real, 2,500 Fake)."
+        }
+    },
     "model_name": "efficientnet_lstm_video",
     "dataset": "FaceForensics++ C23",
     "splits": {
