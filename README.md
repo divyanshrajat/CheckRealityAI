@@ -673,7 +673,7 @@ CheckReality AI's future research and development roadmap is organized into two 
 1. **Research Compliance Progression**: Directly closes the empirical research boundaries identified in the four **Partly Met** requirements in [Section 10](#10-research-compliance--design-requirements-status-dr1dr8) (`DR2`, `DR4`, `DR6`, `DR8`).
 2. **Platform & Operational Capabilities Expansion**: High-impact production, real-time streaming, and architectural enhancements.
 
-### 12.1 Research Compliance Progression (Direct Mapping to Section 10 DRs)
+### 12.1 Research Compliance Progression
 
 The table below explicitly maps each requirement marked **Partly Met** in [Section 10](#10-research-compliance--design-requirements-status-dr1dr8) to its planned technical milestone, empirical target, and architectural implementation:
 
