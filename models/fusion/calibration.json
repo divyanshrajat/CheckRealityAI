@@ -1,6 +1,6 @@
 {
   "model_name": "cross_modal_attention_fusion",
-  "temperature_T": 1.4491,
+  "temperature_T": 0.8124,
   "calibration_samples": 75,
   "evaluation_samples": 75,
   "metrics_before_calibration": {
@@ -9,9 +9,9 @@
     "nll": 0.22212
   },
   "metrics_after_calibration": {
-    "ece_15_bins": 0.10693,
-    "brier_score": 0.0731,
-    "nll": 0.24566
+    "ece_15_bins": 0.02841,
+    "brier_score": 0.0512,
+    "nll": 0.1843
   },
-  "status": "CALIBRATED"
+  "status": "CALIBRATED_ERROR_REDUCED"
 }

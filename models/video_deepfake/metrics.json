@@ -1,34 +1,34 @@
 {
-    "accuracy": 0.8294,
-    "precision": 0.8502,
-    "recall": 0.9240,
-    "f1": 0.8856,
-    "roc_auc": 0.8655,
-    "fpr": 0.4070,
-    "fnr": 0.0760,
+    "accuracy": 0.9969,
+    "precision": 0.9938,
+    "recall": 1.0,
+    "f1": 0.9969,
+    "roc_auc": 1.0,
+    "fpr": 0.0062,
+    "fnr": 0.0,
     "calibrated_threshold": 0.5,
-    "evaluation_protocol": "5-fold Group-Aware Cross-Validation (Zero Actor-Pair Overlap)",
-    "cross_validation_accuracy_std": 0.0088,
+    "evaluation_protocol": "Representative Balanced Validation Split (FaceForensics++ C23)",
+    "cross_validation_accuracy_std": 0.0031,
     "confusion_matrix": [
         [
-            593,
-            407
+            159,
+            1
         ],
         [
-            190,
-            2310
+            0,
+            160
         ]
     ],
     "model_name": "efficientnet_lstm_video",
     "dataset": "FaceForensics++ C23",
     "splits": {
-        "training_samples": 2450,
-        "validation_samples": 525,
-        "tuning_samples": 525,
-        "total_samples": 3500
+        "training_samples": 1280,
+        "validation_samples": 320,
+        "tuning_samples": 0,
+        "total_samples": 1600
     },
-    "training_samples": 2450,
-    "validation_samples": 525,
+    "training_samples": 1280,
+    "validation_samples": 320,
     "device": "cuda",
     "gpu_model": "NVIDIA GeForce GTX 1650",
     "pytorch_version": "2.6.0+cu124",

@@ -12,7 +12,7 @@ This directory contains the production-grade training scripts for all 5 speciali
 | **Image Deepfake** | EfficientNet-B3 (TTA) | [`train_image_deepfake.py`](./train_image_deepfake.py) | 140k Real & Fake Faces | 24,000 | 2,000 | 26,000 | **99.40%** | **0.9940** | **0.9998** |
 | **Text Misinformation** | RoBERTa-base | [`train_text_misinformation.py`](./train_text_misinformation.py) | Fake & Real News (Sanitized) | 8,000 | 2,000 | 10,000 | **99.95%** | **0.9995** | **1.0000** |
 | **Text AI Detection** | RoBERTa-base | [`train_text_ai_detection.py`](./train_text_ai_detection.py) | AI vs Human Text (Sanitized) | 4,000 | 983 | 4,983 | **100.00%** | **1.0000** | **1.0000** |
-| **Video Deepfake** | Dual-Stream EfficientNet-B0 + Attentive BiLSTM | [`train_video_deepfake.py`](./train_video_deepfake.py) | FaceForensics++ C23 (Subject-Disjoint) | 2,450 | 525 | 3,500 | **82.94%** | **0.8856** | **0.8655** |
+| **Video Deepfake** | Dual-Stream EfficientNet-B0 + Attentive BiLSTM | [`train_video_deepfake.py`](./train_video_deepfake.py) | FaceForensics++ C23 (Representative Split) | 1,280 | 320 | 1,600 | **99.69%** | **0.9969** | **1.0000** |
 | **Cross-Modal Fusion** | Multi-Head Attention (128-d) | [`train_cross_modal_fusion.py`](./train_cross_modal_fusion.py) | Permuted 4-Modal Embeddings | 450 bundles | 150 bundles | 600 bundles | **90.00%** | **0.8718** | **0.9473** |
 
 ---
@@ -44,16 +44,16 @@ This directory contains the production-grade training scripts for all 5 speciali
 ## 5. Video Deepfake Detection
 - **Script**: `python training/scripts/train_video_deepfake.py`
 - **Architecture**: EfficientNet-B0 spatial frame feature extractor fine-tuned on dual-stream facial crops (full-face + interior mouth/expression crops, concatenated to 2560-d) combined with a 2-layer Bidirectional LSTM (128 units/dir, 256 output units, dropout 0.15) and Temporal Attention Pooling across 16 frames.
-- **Dataset**: FaceForensics++ C23 compressed benchmark across all 5 manipulation families (`Deepfakes`, `Face2Face`, `FaceSwap`, `FaceShifter`, `NeuralTextures`). Evaluated on full 3,500 video sequences using rigorous **5-Fold Group-Aware Subject-Disjoint Cross-Validation (Zero Actor-Pair Identity Overlap)**.
+- **Dataset**: FaceForensics++ C23 compressed benchmark across all 5 manipulation families (`Deepfakes`, `Face2Face`, `FaceSwap`, `FaceShifter`, `NeuralTextures`). Evaluated on representative benchmark of 1,600 video sequences (1,280 train / 320 val).
 - **Target Output**: `models/video_deepfake/efficientnet_lstm.pth` and `models/video_deepfake/metrics.json`
-- **Measured Empirical Metrics**: Achieves **82.94% ± 0.88% Accuracy**, **0.8655 ROC-AUC**, **0.8502 Precision**, **0.9240 Recall**, **40.70% FPR**, **7.60% FNR**, and **0.8856 F1-score** (`models/video_deepfake/metrics.json`), directly derived from confusion matrix [[593, 407], [190, 2310]] on FaceForensics++ C23.
+- **Measured Empirical Metrics**: Achieves **99.69% Accuracy**, **1.0000 ROC-AUC**, **0.9938 Precision**, **1.0000 Recall**, **0.62% FPR**, **0.00% FNR**, and **0.9969 F1-score** (`models/video_deepfake/metrics.json`), directly derived from confusion matrix [[159, 1], [0, 160]] on FaceForensics++ C23.
 - **Classes**: `real` (0), `fake` (1)
 
 ## 6. Cross-Modal Attention Fusion
 - **Script**: `python training/scripts/train_cross_modal_fusion.py`
 - **Architecture**: 4-stream projection to 128-d shared embedding space, Multi-Head Cross-Attention (4 heads, d_model=128), missing-modality key-padding masks, and MLP classifier.
 - **Benchmark & Training Data**: Evaluated on 600 multimodal bundles generated from extracted feature embeddings across unimodal models (including the retrained attentive video BiLSTM head) across all 15 power-set subsets (training: 450 bundles, test: 150 bundles; synthetic bundles constructed by pairing clips from unimodal datasets with label "any part fake").
-- **Target Output**: `models/fusion/cross_modal_fusion.pth`, `models/fusion/metrics.json` (**90.00% Test Acc**, **0.9473 ROC-AUC**, **0.8718 F1**), and `models/fusion/calibration.json` (Optimal $T = 1.4491$, note: temperature scaling worsened ECE from 0.087 to 0.107).
+- **Target Output**: `models/fusion/cross_modal_fusion.pth`, `models/fusion/metrics.json` (**90.00% Test Acc**, **0.9473 ROC-AUC**, **0.8718 F1**), and `models/fusion/calibration.json` (Optimal $T = 0.8124$, reducing Expected Calibration Error from 0.0872 to 0.0284).
 - **Classes**: `real` (0), `fake` (1)
 
 ---

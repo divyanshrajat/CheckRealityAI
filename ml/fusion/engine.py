@@ -179,7 +179,7 @@ def multimodal_fusion(inputs: Dict[str, float], features: Optional[Dict[str, Any
                     with torch.no_grad():
                         logits, attn = model(tensor_dict)
                         fusion_cal = load_fusion_calibration()
-                        t_neural = float(fusion_cal["temperature_T"]) if (fusion_cal and "temperature_T" in fusion_cal) else 1.0999
+                        t_neural = float(fusion_cal["temperature_T"]) if (fusion_cal and "temperature_T" in fusion_cal) else 0.8124
                         scaled_logits = logits / max(0.01, t_neural)
                         neural_probs = torch.softmax(scaled_logits, dim=1)[0].cpu().numpy()
                         neural_fake_prob = float(neural_probs[1])
