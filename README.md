@@ -30,6 +30,8 @@ B.Tech Major Project (July – December 2026) · Developed by **Divyansh Rajat**
 10. [Research Compliance & Design Requirements Status (DR1–DR8)](#10-research-compliance--design-requirements-status-dr1dr8)
 11. [Current Status, Limitations & Out of Scope](#11-current-status-limitations--out-of-scope)
 12. [Future Scope and Roadmap](#12-future-scope-and-roadmap)
+    - [Research Compliance Progression (Direct Mapping to Section 10 DRs)](#121-research-compliance-progression-direct-mapping-to-section-10-drs)
+    - [Platform & Operational Capabilities Roadmap](#122-platform--operational-capabilities-roadmap)
 13. [Documentation Directory](#13-documentation-directory)
 14. [Academic Attribution & Project Author](#14-academic-attribution--project-author)
 15. [License](#15-license)
@@ -667,16 +669,34 @@ CheckReality AI is a production-ready, fully verified multimodal forensic framew
 
 ## 12. Future Scope and Roadmap
 
-| # | Enhancement | Priority | Planned Implementation |
-|---|---|---|---|
-| **F1** | **Audio-Visual Lip-Sync Discrepancy Engine** | High | Integrate Wav2Lip / SyncNet cross-attention to identify micro-second desynchronization between lip movements and phonetic formants |
-| **F2** | **External Cross-Corpora Benchmark Suite** | High | Ingest Celeb-DF v2, FF++ C40, In-the-Wild, and LIAR benchmark datasets for zero-shot generalization testing |
-| **F3** | **Continuous Production Streaming Drift Monitoring** | Medium | Ingest live user streaming traffic to evaluate distribution drift (KS / PSI) in production |
-| **F4** | **Live RTSP / WebRTC Stream Interception** | High | Extend Celery workers to ingest live broadcast streams and output sliding-window manipulation scores in real time |
-| **F5** | **Multilingual Text Adaptation** | Medium | Upgrade text classifiers to `XLM-RoBERTa` to support Hindi, Punjabi, and other regional Indian languages |
-| **F6** | **Hardware Acceleration via TensorRT & ONNX** | Medium | Export PyTorch models to ONNX and quantized INT8 TensorRT engines for sub-10ms edge inference |
-| **F7** | **Blockchain Evidence Ledger** | Low | Anchor forensic report SHA-256 digests onto an immutable ledger (e.g. Ethereum / Hyperledger) for tamper-proof verification |
-| **F8** | **Adversarial Robustness Hardening** | High | Incorporate adversarial training against targeted gradient evasion attacks (FGSM / PGD) |
+CheckReality AI's future research and development roadmap is organized into two targeted tracks:
+1. **Research Compliance Progression**: Directly closes the empirical research boundaries identified in the four **Partly Met** requirements in [Section 10](#10-research-compliance--design-requirements-status-dr1dr8) (`DR2`, `DR4`, `DR6`, `DR8`).
+2. **Platform & Operational Capabilities Expansion**: High-impact production, real-time streaming, and architectural enhancements.
+
+### 12.1 Research Compliance Progression (Direct Mapping to Section 10 DRs)
+
+The table below explicitly maps each requirement marked **Partly Met** in [Section 10](#10-research-compliance--design-requirements-status-dr1dr8) to its planned technical milestone, empirical target, and architectural implementation:
+
+| Target Requirement | Baseline State (Measured in Section 10) | Empirical Gap & Limitation | Target Enhancement Milestone | Planned Technical Implementation & Metrics | Target Phase |
+| :--- | :--- | :--- | :--- | :--- | :---: |
+| **DR2**<br>Intermediate Cross-Modal Attention Fusion (G1, G2) | Multi-Head Cross-Attention network evaluated on 150 test bundles across 15 active subsets (90.00% Acc, 0.9473 AUC). | Training & test bundles are synthetically paired from unrelated unimodal clips. Authentic joint multimodal interactions are not modeled end-to-end. | **In-The-Wild Joint Multimodal Corpus & End-to-End Alignment** | Ingest $\ge 5,000$ authentic in-the-wild video/audio/text bundles (e.g. DFDC, In-The-Wild Deepfakes, televised broadcast pairs). Train cross-attention with InfoNCE contrastive alignment loss to jointly model speech-lip coherence and semantic context alongside feature concatenation. | Phase 8 (Q1 2027) |
+| **DR4**<br>Calibrated Confidence (G5) | Platt temperature scaling fit per modality; fusion calibrated with $T = 0.8124$ (ECE reduced by 67.4% from 0.0872 to 0.0284). | Multimodal fusion calibration is empirically evaluated on 75 held-out samples. Does not output statistical prediction intervals under severe noise. | **Large-Scale Joint Calibration & Conformal Prediction Intervals** | Scale calibration evaluation to $\ge 2,500$ joint multimodal samples across variable codec compression (C23, C40) and acoustic SNR levels (0–30 dB). Upgrade point-estimate Platt scaling to **Split Conformal Prediction** to output rigorous, distribution-free $(1 - \alpha)$ uncertainty intervals alongside point probabilities. | Phase 8 (Q2 2027) |
+| **DR6**<br>Cross-Dataset Evaluation as Primary Protocol (G3) | Empirical perturbation stress tests measured (JPEG Q=50, 8kHz telephony codec downsampling, 25% video frame dropout, 5% text typos). | External cross-corpora (Celeb-DF v2, FF++ C40, In-the-Wild, ASVspoof 2021 DF, LIAR) cataloged in Future Scope; primary benchmark is within-dataset held-out manifests. | **Multi-Corpora Zero-Shot Benchmark Suite** | Ingest and evaluate zero-shot transfer across external benchmarks: **Celeb-DF v2** (590 celebrity videos), **FaceForensics++ C40** (heavy H.264 compression), **ASVspoof 2021 DF** (lossy codec audio), and **LIAR-PLUS** (multimodal claim verification). Target cross-dataset AUC degradation $\le 12\%$. | Phase 9 (Q2 2027) |
+| **DR8**<br>Retraining and Versioning Path (G7) | Baseline validation posteriors saved; two-sample KS-test and PSI drift detector implemented with retraining queue logging (`models/retraining_queue.log`). | No live streaming production traffic currently feeding the drift monitor; drift checks executed on static evaluation batches. | **Automated MLOps Production Drift Pipeline & Retraining Loop** | Deploy event-driven message queue (Apache Kafka / Redis Streams) capturing incoming inference requests. Compute rolling PSI and KS-test statistics over 24-hour sliding windows. Automatically trigger containerized retraining pipelines (Kubernetes / Celery) when PSI $> 0.25$ or KS $p < 0.05$, validating model candidates against automated regression gates before updating `models/model_registry.json`. | Phase 9 (Q3 2027) |
+
+---
+
+### 12.2 Platform & Operational Capabilities Roadmap
+
+| # | Enhancement | Priority | Target Timeline | Component | Planned Architectural Implementation |
+|---|---|:---:|:---:|---|---|
+| **F1** | **Audio-Visual Lip-Sync & Phonetic Discrepancy Engine** | High | Q1 2027 | `ml/fusion/lip_sync.py` | Integrate `SyncNet` / `Wav2Lip` cross-attention to detect microsecond temporal desynchronization between viseme mouth trajectories and acoustic phonetic formants, detecting advanced facial dubbing deepfakes. |
+| **F2** | **Live RTSP / WebRTC Stream Interception** | High | Q2 2027 | `backend/app/streaming.py` | Extend Celery workers with a low-latency sliding-window ring buffer to intercept live RTSP broadcast feeds and WebRTC video conferences (e.g. Zoom, Teams), outputting temporal manipulation alarms in real time. |
+| **F3** | **Multilingual Text NLP Adaptation** | Medium | Q2 2027 | `ml/adapters/text.py` | Upgrade text classifiers from English-only `RoBERTa-base` to multilingual `XLM-RoBERTa-large`, fine-tuning on Indic and European news/misinformation datasets (Hindi, Punjabi, Bengali, Spanish, French). |
+| **F4** | **Hardware Acceleration via TensorRT & INT8 Quantization** | Medium | Q3 2027 | `ml/optimization/` | Compile PyTorch backbones (`EfficientNet-B0/B3`, `ResNet-18`, `RoBERTa`) to ONNX and quantized INT8 TensorRT engines, cutting inference latency by $>65\%$ to achieve sub-15ms edge turnaround on embedded GPU platforms (NVIDIA Jetson). |
+| **F5** | **Cryptographic Blockchain Evidence Ledger** | Low | Q4 2027 | `backend/app/ledger.py` | Anchor immutable SHA-256 digests of generated A4 forensic certificates and model weight registries onto a public/consortium blockchain ledger (Hyperledger / Ethereum), creating tamper-proof legal chains of custody. |
+| **F6** | **Adversarial Robustness Hardening** | High | Q4 2027 | `training/adversarial/` | Incorporate projected gradient descent (PGD) and fast gradient sign method (FGSM) adversarial training into facial and acoustic backbones to prevent intentional adversarial noise evasion. |
+| **F7** | **Zero-Day Synthesis Architecture Fingerprinting** | Medium | Q1 2028 | `ml/forensics/attribution.py` | Implement open-set recognition and latent GAN/Diffusion fingerprint clustering (PRNU extraction + frequency spectrum analysis) to attribute deepfakes to specific generator architectures (e.g., Stable Diffusion, Midjourney, Sora, ElevenLabs). |
 
 ---
 
