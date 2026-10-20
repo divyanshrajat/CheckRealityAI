@@ -3,7 +3,12 @@ import json
 from typing import Dict, Any, List, Optional
 import numpy as np
 
-# Empirical reliability weights derived from validation benchmarks (all >= 99%)
+# Modality reliability weights prior to gating.
+# NOTE ON KNOWN ARCHITECTURAL LIMITATION (Documented in Paper & DR4):
+# Video carries a prior weight of 0.35 reflecting its role as the primary temporal stream in multimodal deepfakes.
+# However, on FaceForensics++ C23, video is empirically the weakest detector (AUC 0.8655 vs >0.999 for audio/image/text).
+# Carrying the largest fusion prior means video predictions can heavily influence the unified verdict unless
+# mitigated by dynamic certainty gating and discrepancy detection.
 MODALITY_RELIABILITY_WEIGHTS = {
     'video': 0.35,
     'audio': 0.25,
@@ -228,7 +233,7 @@ def multimodal_fusion(inputs: Dict[str, float], features: Optional[Dict[str, Any
         "unified_confidence": raw_confidence,
         "calibrated_confidence": raw_confidence,
         "fusion_calibration_status": cal_status,
-        "cross_modal_attention_status": "TRAINED (models/fusion/cross_modal_fusion.pth; synthetic bundle Val AUC: 0.9523)",
+        "cross_modal_attention_status": "TRAINED (models/fusion/cross_modal_fusion.pth; synthetic bundle Test AUC: 0.9473, F1: 0.8718)",
         "unified_label": unified_label,
         "modality_contributions": {k: round(v, 4) for k, v in normalized_inputs.items()},
         "cross_modal_attribution": attribution,

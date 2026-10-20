@@ -87,9 +87,9 @@ def run_integration_tests():
     print("\n[3/5] Testing Multimodal Fusion Engine...")
     try:
         sample_inputs = {
-            'video': 0.96,
-            'audio': 0.92,
-            'text': 0.08
+            'video': 0.978,
+            'audio': 0.999,
+            'text': 0.001
         }
         fusion_out = multimodal_fusion(sample_inputs)
         print(f"  [PASS] Bayesian Unified Probability: {fusion_out['unified_fake_probability']*100:.1f}%")

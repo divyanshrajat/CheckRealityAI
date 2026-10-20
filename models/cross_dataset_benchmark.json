@@ -73,25 +73,25 @@
     "video_frame_dropout_25pct": {
       "test_name": "Video 25% Temporal Frame Dropout Robustness",
       "model": "EfficientNet-B0 + 2L LSTM",
-      "sample_count": 320,
-      "sampling_method": "Representative video validation split (320 sequences, 16 frames each)",
+      "sample_count": 525,
+      "sampling_method": "Held-out video test split (525 sequences, 16 frames each)",
       "clean_baseline_metrics": {
-        "accuracy": 0.9969,
-        "precision": 0.9938,
-        "recall": 1.0,
-        "f1": 0.9969,
-        "roc_auc": 1.0,
-        "eer": 0.0
+        "accuracy": 0.5695,
+        "precision": 0.9461,
+        "recall": 0.4213,
+        "f1": 0.583,
+        "roc_auc": 0.7791,
+        "eer": 0.3293
       },
       "perturbed_metrics_25pct_dropout": {
-        "accuracy": 1.0,
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1": 1.0,
-        "roc_auc": 1.0,
-        "eer": 0.0
+        "accuracy": 0.5657,
+        "precision": 0.9509,
+        "recall": 0.4133,
+        "f1": 0.5762,
+        "roc_auc": 0.7794,
+        "eer": 0.344
       },
-      "delta_auc": 0.0
+      "delta_auc": 0.0003
     },
     "text_typo_noise_5pct": {
       "test_name": "Text 5% Typo / Character Noise Injection Robustness",

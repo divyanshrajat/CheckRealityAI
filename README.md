@@ -40,7 +40,7 @@ B.Tech Major Project (July – December 2026) · Developed by **Divyansh Rajat**
 
 > **Official Capstone Title:** *A Multimodal Deepfake and Misinformation Detection System for Digital Content Authenticity*  
 > **Academic Degree:** Bachelor of Technology in Computer Science & Engineering, BBSBEC (IKGPTU)  
-> **Author & Investigator:** Divyansh Rajat (Roll No. 2300358) | **Project Guide:** Dr. Manpreet Kaur
+> **Student Authors & Investigators:** Divyansh Rajat (Roll No. 2300358) | **Project Guide:** Dr. Manpreet Kaur
 
 The rapid proliferation of generative artificial intelligence has made creating hyper-realistic deepfake images, fabricated videos, synthetic voice clones, and automated misinformation virtually frictionless. While commodity synthesis tools continue to advance, forensic detection tools remain fragmented: existing solutions are typically isolated to a single modality (e.g. text-only or image-only), treat models as uninterpretable black boxes, fail to expose localization artifacts, and degrade severely on compressed real-world media.
 
@@ -219,8 +219,8 @@ Every model in CheckReality AI is fine-tuned on verified public academic dataset
 - **Architecture**: Spatial `EfficientNet-B0` feature extractor fine-tuned on dual-stream facial crops (full-face + interior mouth/expression crops, concatenated into 2560-d feature vectors) combined with a **2-layer Bidirectional Temporal LSTM Head** (`hidden_dim=128` per direction, 256 output units, `dropout=0.15`) and **Temporal Attention Pooling**.
 - **Temporal Modeling**: Samples 16 uniformly spaced keyframes across video duration, encoding dual-stream feature vectors (`[16, 2560]`) with soft temporal attention pooling to dynamically weight subtle localized manipulation spikes across the sequence.
 - **Dataset**: FaceForensics++ C23 compressed benchmark across all 5 manipulation families (`Deepfakes`, `Face2Face`, `FaceSwap`, `FaceShifter`, `NeuralTextures`). Evaluated on full 3,500 video sequences using rigorous **5-Fold Group-Aware Subject-Disjoint Cross-Validation (Zero Actor-Pair Identity Overlap)**.
-- **Evaluation Protocol & Empirical Performance**: Empirically measured across 3,500 video sequences with **82.94% ± 0.88% Accuracy**, **0.8655 ROC-AUC**, **0.8037 Precision**, **0.9857 Recall**, and **0.8856 F1-score** ([`models/video_deepfake/metrics.json`](models/video_deepfake/metrics.json)), which matches and exceeds standard peer-reviewed benchmarks on heavily compressed H.264 video forensics.
-- **Artifact**: [`models/video_deepfake/efficientnet_lstm.pth`](models/video_deepfake/efficientnet_lstm.pth) (25.1 MB, SHA256: `5e65a55c...`).
+- **Evaluation Protocol & Empirical Performance**: Empirically measured across 3,500 video sequences with **82.94% ± 0.88% Accuracy**, **0.8655 ROC-AUC**, **0.8502 Precision**, **0.9240 Recall**, **40.70% FPR**, **7.60% FNR**, and **0.8856 F1-score** ([`models/video_deepfake/metrics.json`](models/video_deepfake/metrics.json)), mathematically derived from confusion matrix [[593, 407], [190, 2310]] on FaceForensics++ C23.
+- **Artifact**: [`models/video_deepfake/efficientnet_lstm.pth`](models/video_deepfake/efficientnet_lstm.pth) (23.6 MB, SHA256: `5e65a55c...`).
 
 ---
 
@@ -243,6 +243,10 @@ Modalities are assigned base reliability weights $w_m^{(0)}$ proportional to the
 $$
 w_{\text{video}}^{(0)} = 0.35, \quad w_{\text{audio}}^{(0)} = 0.25, \quad w_{\text{image}}^{(0)} = 0.25, \quad w_{\text{text}}^{(0)} = 0.15
 $$
+
+> [!NOTE]
+> **Known Fusion Prior Limitation (as documented in Research Paper Section 4 & DR4):**  
+> Video carries the largest base prior ($w_{\text{video}}^{(0)} = 0.35$) reflecting its status as the primary temporal stream in multimodal deepfakes. However, under realistic cross-validation on FaceForensics++ C23, video is empirically the weakest detector (AUC 0.8655 vs >0.999 for audio, image, and text). Carrying the highest prior weight means video false-positive or false-negative predictions can disproportionately shift the unified verdict unless mitigated by dynamic certainty scaling and discrepancy detection.
 
 #### 3. Dynamic Confidence Scaling
 If any single stream detects manipulation or authenticity with extreme certainty ($p_m > 0.92$ or $p_m < 0.08$), its effective weight $w_m$ is dynamically scaled by **$+25\%$** to let unambiguous forensic cues dominate the decision:
@@ -314,10 +318,10 @@ In addition to late Bayesian decision fusion, CheckReality AI includes a dedicat
 - **Input Projections**: Linear projection layers map feature embeddings from each modality into a shared $d = 128$ dimensional latent space: Video (256-d from LSTM), Audio (512-d from ResNet-18), Image (1536-d from EfficientNet-B3), and Text (768-d from RoBERTa).
 - **Multi-Head Attention**: 4 parallel attention heads model pairwise inter-stream dependencies across the token sequence $[T_{\text{video}}, T_{\text{audio}}, T_{\text{image}}, T_{\text{text}}]$.
 - **Missing-Modality Masking**: Boolean key-padding masks zero out unobserved modalities, allowing the network to operate dynamically over any of the $2^4 - 1 = 15$ active modality subsets.
-- **Benchmark & Training Data**: Evaluated across 600 synthetic multimodal bundles generated by randomly permuting extracted feature embeddings (~100 validation samples per modality across all 15 power-set subsets), as an open, in-the-wild joint 4-modality video+audio+image+text dataset is not available on disk.
-- **Trained Artifact**: Fine-tuned with AdamW and Cross-Entropy loss. Checkpoint saved at [`models/fusion/cross_modal_fusion.pth`](models/fusion/cross_modal_fusion.pth) (2.05 MB).
-- **Empirical Performance**: Achieves **ROC-AUC = 0.9523**, **Accuracy = 88.67%**, and **F1 = 0.8777** on validation data (`models/fusion/metrics.json`).
-- **Multimodal Temperature Calibration**: Calibrated with optimal temperature parameter $T = 1.0999$ via Negative Log-Likelihood minimization on held-out bundle logits, reducing Expected Calibration Error (ECE) to **0.0839** (`models/fusion/calibration.json`).
+- **Benchmark & Training Data**: Evaluated across 600 synthetic multimodal bundles built by pairing unrelated clips from unimodal datasets with label "any part fake" (450 train / 150 test bundles across active subsets), as an open, natively paired joint 4-modality video+audio+image+text dataset is not available on disk.
+- **Trained Artifact**: Fine-tuned with AdamW and Cross-Entropy loss. Checkpoint saved at [`models/fusion/cross_modal_fusion.pth`](models/fusion/cross_modal_fusion.pth) (2.05 MB, 534,722 parameters).
+- **Empirical Performance**: Achieves **ROC-AUC = 0.9473**, **Accuracy = 90.00%**, **Recall = 0.7727**, **Precision = 1.0000**, and **F1 = 0.8718** on 150 held-out test bundles (`models/fusion/metrics.json`), matching the website and report screenshots.
+- **Multimodal Temperature Calibration (DR4 Finding)**: Optimization fitted temperature parameter $T = 1.4491$. However, temperature scaling on the fusion output actually worsened Expected Calibration Error from $\text{ECE} = 0.0872$ to $\text{ECE} = 0.1069$ (`models/fusion/calibration.json`), documented as a known research limitation in the capstone paper.
 - **Live Execution at Inference**: When media pipelines provide intermediate feature vectors, `CrossModalAttentionFusion.forward(features)` is called directly during inference, outputting token cross-attention matrices and neural manipulation probabilities. When only scalar posteriors are supplied, calibrated Bayesian Reliability Gating is executed.
 
 ### Explainable AI (XAI) Suite (`ml/xai/engine.py`)
@@ -586,22 +590,22 @@ CHECKREALITY AI - FULL SYSTEM INTEGRATION TEST
   [PASS] Bayesian Unified Probability: 79.0%
   [PASS] Unified Verdict: Fake
   [PASS] Risk Severity: HIGH
-  [PASS] Agreement Index: 0.189
+  [PASS] Agreement Index: 0.069
   [PASS] Forensic Synthesis: Forensic Fusion Engine analyzed 3 modal stream(s): VIDEO, AUDIO, TEXT. Cross-modal discrepancy detected: VIDEO, AUDIO showed synthetic indicators, whereas TEXT appeared authentic. This pattern is typical of targeted speech/facial replacement deepfakes. Overall forensic verdict: FAKE with unified confidence of 79.0% (HIGH Risk).
-  [PASS] Neural Cross-Modal Attention: Called at inference, Neural Prob=99.5%, Attention Matrix=4x4
+  [PASS] Neural Cross-Modal Attention: Called at inference, Neural Prob=2.4%, Attention Matrix=4x4
 
 [4/5] Testing Explainable AI (XAI) Output...
   [PASS] Text Attribution XAI: Gradient Token Attribution, Tokens: 6
   [PASS] Image Grad-CAM XAI: Grad-CAM Saliency, Heatmap Length: 32584 bytes
   [PASS] Audio Saliency XAI: Acoustic Saliency Analysis, Anomaly Windows: 4
-  [PASS] Video Grad-CAM XAI: Temporal Grad-CAM, Heatmap Length: 369700 bytes
+  [PASS] Video Grad-CAM XAI: Temporal Grad-CAM, Heatmap Length: 343512 bytes
 
 [5/5] Validating Organic Metrics across All 5 Models...
   [PASS] pretrained_resnet18_audio: Acc=99.60%, F1=0.9960, AUC=0.9999 (Valid)
   [PASS] efficientnet_b3_deepfake: Acc=99.40%, F1=0.9940, AUC=0.9998 (Valid)
   [PASS] roberta_base_misinformation: Acc=99.95%, F1=0.9995, AUC=1.0000 (Valid)
   [PASS] roberta_base_ai_text: Acc=100.00%, F1=1.0000, AUC=1.0000 (Valid)
-  [PASS] efficientnet_lstm_video: Acc=99.69%, F1=0.9969, AUC=1.0000 (Valid)
+  [PASS] efficientnet_lstm_video: Acc=82.94%, F1=0.8856, AUC=0.8655 (Valid)
   [PASS] All 5 detectors verified with genuine empirical metrics records.
 
 ============================================================
@@ -622,16 +626,16 @@ INTEGRATION TEST SUMMARY: 5/5 SUITES PASSED
 
 ## 10. Research Compliance & Design Requirements Status (DR1–DR8)
 
-The table below documents the empirically measured compliance status of CheckReality AI across all 8 Design Requirements (`DR1`–`DR8`). Status follows strictly from empirical runs and artifacts on disk; unmeasured external items are explicitly marked `NOT_MEASURED`.
+The table below documents the empirically measured compliance status of CheckReality AI across all 8 Design Requirements (`DR1`–`DR8`), resulting in **4 requirements Met** (`DR1`, `DR3`, `DR5`, `DR7`) and **4 requirements Partly Met** (`DR2`, `DR4`, `DR6`, `DR8`). Status follows strictly from empirical runs and artifacts on disk; unmeasured external items are explicitly marked `NOT_MEASURED`.
 
 | DR | Requirement (gap) | Status | Evidence File | Produced by Command | Date |
 |---|---|---|---|---|---|
 | **DR1** | Uniform modality interface (G1) | **Met** | `ml/adapters/base.py`, `backend/app/inference.py` | `python backend/test_integration.py` | 2026-10-20 |
-| **DR2** | Intermediate cross-modal attention fusion (G1, G2) | **Met** | `models/fusion/cross_modal_fusion.pth`, `ml/fusion/attention.py` | `python training/scripts/train_cross_modal_fusion.py` (Multi-Head Attention network fusing 4 representations with key-padding mask; Val AUC: 0.9603, Acc: 90.00% on 600 multimodal bundles; forward pass executed at live inference when feature embeddings are provided) | 2026-10-20 |
+| **DR2** | Intermediate cross-modal attention fusion (G1, G2) | **Partly met (Synthetic bundles; lacking joint data)** | `models/fusion/cross_modal_fusion.pth`, `ml/fusion/attention.py` | `python training/scripts/train_cross_modal_fusion.py` (Multi-Head Attention network fusing 4 representations with key-padding mask; Test Acc: 90.00%, F1: 0.8718, ROC-AUC: 0.9473 on 150 test bundles. Rated partly met because attention model was trained on 600 synthetic bundles constructed by pairing unrelated clips from unimodal datasets with label 'any part fake'; genuinely joint multimodal corpora are needed for full compliance) | 2026-10-20 |
 | **DR3** | Modality gating and missing-modality semantics (G2, G4) | **Met** | `benchmarks/subset_coverage_report.json`, `ml/fusion/gating.py` | `python ml/fusion/gating.py` (Convex gating verified across all 15 subsets; trained attention network handles missing streams via learned padding tokens) | 2026-10-20 |
-| **DR4** | Calibrated confidence (G5) | **Met** | `models/calibration_benchmark.json`, `models/fusion/calibration.json` | `python training/fit_calibration.py` (Per-modality temperatures fit with empirical ECE: Image ECE=0.0146, Audio ECE=0.0056, Video ECE=0.0055, Text Misinfo ECE=0.0559, Text AI ECE=0.0000; Attention fusion calibrated with T=1.4491) | 2026-10-20 |
+| **DR4** | Calibrated confidence (G5) | **Partly met (Fusion calibration worsened)** | `models/calibration_benchmark.json`, `models/fusion/calibration.json` | `python training/fit_calibration.py` (Unimodal models successfully calibrated: Image ECE=0.0146, Audio ECE=0.0056, Video ECE=0.0055, Text Misinfo ECE=0.0559, Text AI ECE=0.0000. Rated partly met because temperature scaling on the multimodal fusion output with T=1.4491 actually worsened Expected Calibration Error from 0.087 to 0.107, `models/fusion/calibration.json`; Test AUC: 0.9473, F1: 0.8718) | 2026-10-20 |
 | **DR5** | Two-layer explanation (G5) | **Met** | `ml/fusion/engine.py`, `backend/app/inference.py` | `python backend/test_integration.py` (Layer 1: native feature saliency via Grad-CAM, token attribution, acoustic Mel saliency; Layer 2: signed weighted-deviation cross-modal attribution) | 2026-10-20 |
-| **DR6** | Cross-dataset evaluation as primary protocol (G3) | **Partly met (External datasets in Future Scope)** | `models/cross_dataset_benchmark.json` | `python training/eval_cross_dataset.py` (Real perturbation stress tests measured: JPEG Q=50, 8kHz telephony codec downsampling, 25% video frame dropout: 1.0000 ROC-AUC with $\Delta \text{AUC}=0.0$, 5% text typos; external cross-corpora Celeb-DF v2, FF++ C40, In-the-Wild, and LIAR cataloged in Future Scope) | 2026-10-20 |
+| **DR6** | Cross-dataset evaluation as primary protocol (G3) | **Partly met (External datasets in Future Scope)** | `models/cross_dataset_benchmark.json` | `python training/eval_cross_dataset.py` (Real perturbation stress tests measured: JPEG Q=50, 8kHz telephony codec downsampling, 25% video frame dropout on held-out test split: Clean AUC 0.7791 -> Perturbed AUC 0.7794 with $\Delta \text{AUC}=+0.0003$, 5% text typos; external cross-corpora Celeb-DF v2, FF++ C40, In-the-Wild, and LIAR cataloged in Future Scope) | 2026-10-20 |
 | **DR7** | Latency and size budgets (G6) | **Met** | `benchmarks/latency_size_budget_report.json` | `python benchmarks/benchmark_latency.py` (Empirical P50, P95, P99 latencies, parameter counts, disk footprints, and peak memory measured on CPU and GPU across 100 timed runs per model and 10,000 fusion calls) | 2026-10-20 |
 | **DR8** | Retraining and versioning path (G7) | **Partly met (Live traffic in Future Scope)** | `models/model_registry.json`, `models/retraining_queue.log` | `python ml/monitoring/drift_detector.py` (Baseline validation posteriors saved, KS-test and PSI drift detector implemented with retraining queue logging; live streaming production traffic cataloged in Future Scope) | 2026-10-20 |
 
@@ -640,8 +644,7 @@ The table below documents the empirically measured compliance status of CheckRea
 ## 11. Current Status, Limitations & Out of Scope
 
 ### Current Status
-CheckReality AI is a production-ready, fully verified multimodal forensic framework with live inference, explainable visualizations, multi-modal Bayesian fusion, and a production dashboard. Specialized neural detectors achieve verified empirical benchmarks across all modalities: Audio Spoofing (99.60% Acc, 0.9999 AUC), Image Deepfakes (99.40% Acc, 0.9998 AUC), Text Misinformation (99.95% Acc, 1.0000 AUC), AI Essay Detection (100.0% Acc, 1.0000 AUC), and Compressed Video Deepfake Detection (82.94% ± 0.88% Acc, 0.8655 ROC-AUC under strict 5-fold Group-Aware Subject-Disjoint Cross-Validation across 3,500 FaceForensics++ C23 video sequences with zero actor-pair identity overlap). Cross-modal attention fusion achieves 90.00% accuracy and 0.9603 ROC-AUC across joint multimodal embedding representations.
-
+CheckReality AI is a production-ready, fully verified multimodal forensic framework with live inference, explainable visualizations, multi-modal Bayesian fusion, and a production dashboard. Specialized neural detectors achieve verified empirical benchmarks across all modalities: Audio Spoofing (99.60% Acc, 0.9999 AUC), Image Deepfakes (99.40% Acc, 0.9998 AUC), Text Misinformation (99.95% Acc, 1.0000 AUC), AI Essay Detection (100.0% Acc, 1.0000 AUC), and Compressed Video Deepfake Detection (82.94% ± 0.88% Acc, 0.8655 ROC-AUC under strict 5-fold Group-Aware Subject-Disjoint Cross-Validation across 3,500 FaceForensics++ C23 video sequences with zero actor-pair identity overlap). Cross-modal attention fusion achieves 90.00% accuracy, 0.8718 F1-score, and 0.9473 ROC-AUC on 150 held-out multimodal test bundles.
 ### Operational Limitations
 - **Face Resolution & Centering**: Video deepfake detection relies on spatial center-face crops to isolate facial blending boundaries from background macroblock noise. Sequences where the face is heavily occluded or smaller than $40 \times 40$ pixels may exhibit reduced confidence.
 - **Language Scope**: Text misinformation and AI essay detection models currently evaluate **English-language** texts only.

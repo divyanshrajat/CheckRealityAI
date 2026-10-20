@@ -231,14 +231,14 @@ def eval_audio_codec_perturbation(sample_count: int = 300) -> dict:
 # 3. Video Perturbation Test: 25% Temporal Frame Dropout
 # ==============================================================================
 def eval_video_frame_dropout() -> dict:
-    val_feats_path = os.path.join(PROJECT_ROOT, "training", "manifests", "video_val_feats.pt")
-    if os.path.exists(val_feats_path):
+    test_feats_path = os.path.join(PROJECT_ROOT, "training", "manifests", "video_test_feats.pt")
+    if os.path.exists(test_feats_path):
+        features, labels = torch.load(test_feats_path, map_location=device)
+        sampling_desc = f"Held-out video test split ({len(features)} sequences, 16 frames each)"
+    else:
+        val_feats_path = os.path.join(PROJECT_ROOT, "training", "manifests", "video_val_feats.pt")
         features, labels = torch.load(val_feats_path, map_location=device)
         sampling_desc = f"Representative video validation split ({len(features)} sequences, 16 frames each)"
-    else:
-        test_feats_path = os.path.join(PROJECT_ROOT, "training", "manifests", "video_test_feats.pt")
-        features, labels = torch.load(test_feats_path, map_location=device)
-        sampling_desc = f"Strictly held-out video test split ({len(features)} sequences, 16 frames each)"
 
     model_path = os.path.join(PROJECT_ROOT, "models", "video_deepfake", "efficientnet_lstm.pth")
     model = EfficientNetLSTM()
