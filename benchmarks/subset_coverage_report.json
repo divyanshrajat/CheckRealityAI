@@ -1,8 +1,8 @@
 {
   "benchmark_name": "DR3 Subset Coverage & Missing Modality Semantics Report",
   "command": "python ml/fusion/gating.py",
-  "git_commit": "0908d89bc14a1bca1ea1b04ae1e0accc9dbaee69",
-  "utc_timestamp": "2026-10-18T10:19:01.854170+00:00",
+  "git_commit": "2df545d086b603904e02401c69510322b75efc3a",
+  "utc_timestamp": "2026-10-20T12:08:15.963199+00:00",
   "subset_coverage_check": {
     "check_name": "DR3 Modality Subset Coverage Check",
     "total_subsets": 15,
@@ -84,8 +84,8 @@
           "audio"
         ],
         "convex_weights": {
-          "video": 0.5833,
-          "audio": 0.4167
+          "video": 0.4,
+          "audio": 0.6
         },
         "weight_sum": 1.0,
         "status": "VALID_COVERAGE",
@@ -102,8 +102,8 @@
           "image"
         ],
         "convex_weights": {
-          "video": 0.5833,
-          "image": 0.4167
+          "video": 0.4,
+          "image": 0.6
         },
         "weight_sum": 1.0,
         "status": "VALID_COVERAGE",
@@ -120,8 +120,8 @@
           "text"
         ],
         "convex_weights": {
-          "video": 0.7,
-          "text": 0.3
+          "video": 0.5,
+          "text": 0.5
         },
         "weight_sum": 1.0,
         "status": "VALID_COVERAGE",
@@ -156,8 +156,8 @@
           "text"
         ],
         "convex_weights": {
-          "audio": 0.625,
-          "text": 0.375
+          "audio": 0.6,
+          "text": 0.4
         },
         "weight_sum": 1.0,
         "status": "VALID_COVERAGE",
@@ -174,8 +174,8 @@
           "text"
         ],
         "convex_weights": {
-          "image": 0.625,
-          "text": 0.375
+          "image": 0.6,
+          "text": 0.4
         },
         "weight_sum": 1.0,
         "status": "VALID_COVERAGE",
@@ -193,9 +193,9 @@
           "image"
         ],
         "convex_weights": {
-          "video": 0.4118,
-          "audio": 0.2941,
-          "image": 0.2941
+          "video": 0.25,
+          "audio": 0.375,
+          "image": 0.375
         },
         "weight_sum": 1.0,
         "status": "VALID_COVERAGE",
@@ -212,9 +212,9 @@
           "text"
         ],
         "convex_weights": {
-          "video": 0.4667,
-          "audio": 0.3333,
-          "text": 0.2
+          "video": 0.2857,
+          "audio": 0.4286,
+          "text": 0.2857
         },
         "weight_sum": 1.0,
         "status": "VALID_COVERAGE",
@@ -231,9 +231,9 @@
           "text"
         ],
         "convex_weights": {
-          "video": 0.4667,
-          "image": 0.3333,
-          "text": 0.2
+          "video": 0.2857,
+          "image": 0.4286,
+          "text": 0.2857
         },
         "weight_sum": 1.0,
         "status": "VALID_COVERAGE",
@@ -250,9 +250,9 @@
           "text"
         ],
         "convex_weights": {
-          "audio": 0.3846,
-          "image": 0.3846,
-          "text": 0.2308
+          "audio": 0.375,
+          "image": 0.375,
+          "text": 0.25
         },
         "weight_sum": 1.0,
         "status": "VALID_COVERAGE",
@@ -270,10 +270,10 @@
           "text"
         ],
         "convex_weights": {
-          "video": 0.35,
-          "audio": 0.25,
-          "image": 0.25,
-          "text": 0.15
+          "video": 0.2,
+          "audio": 0.3,
+          "image": 0.3,
+          "text": 0.2
         },
         "weight_sum": 1.0,
         "status": "VALID_COVERAGE",
@@ -287,8 +287,8 @@
     "num_bundles": 40,
     "bundle_ground_truth_distribution": {
       "total": 40,
-      "fake_count": 34,
-      "real_count": 6
+      "fake_count": 37,
+      "real_count": 3
     },
     "subsets": [
       {
@@ -297,8 +297,8 @@
         "active_modalities": [
           "video"
         ],
-        "measured_auc": 0.7794,
-        "measured_accuracy": 0.675
+        "measured_auc": 0.5946,
+        "measured_accuracy": 0.525
       },
       {
         "subset": "AUDIO",
@@ -306,8 +306,8 @@
         "active_modalities": [
           "audio"
         ],
-        "measured_auc": 0.7157,
-        "measured_accuracy": 0.625
+        "measured_auc": 0.5946,
+        "measured_accuracy": 0.55
       },
       {
         "subset": "IMAGE",
@@ -315,8 +315,8 @@
         "active_modalities": [
           "image"
         ],
-        "measured_auc": 0.7598,
-        "measured_accuracy": 0.525
+        "measured_auc": 0.6982,
+        "measured_accuracy": 0.45
       },
       {
         "subset": "TEXT",
@@ -324,8 +324,8 @@
         "active_modalities": [
           "text"
         ],
-        "measured_auc": 0.5686,
-        "measured_accuracy": 0.15
+        "measured_auc": 0.1982,
+        "measured_accuracy": 0.5
       },
       {
         "subset": "AUDIO+VIDEO",
@@ -334,8 +334,8 @@
           "video",
           "audio"
         ],
-        "measured_auc": 0.9363,
-        "measured_accuracy": 0.6
+        "measured_auc": 0.7027,
+        "measured_accuracy": 0.55
       },
       {
         "subset": "IMAGE+VIDEO",
@@ -344,8 +344,8 @@
           "video",
           "image"
         ],
-        "measured_auc": 0.8676,
-        "measured_accuracy": 0.575
+        "measured_auc": 0.7568,
+        "measured_accuracy": 0.425
       },
       {
         "subset": "TEXT+VIDEO",
@@ -354,8 +354,8 @@
           "video",
           "text"
         ],
-        "measured_auc": 0.7745,
-        "measured_accuracy": 0.5
+        "measured_auc": 0.4144,
+        "measured_accuracy": 0.525
       },
       {
         "subset": "AUDIO+IMAGE",
@@ -364,8 +364,8 @@
           "audio",
           "image"
         ],
-        "measured_auc": 0.8431,
-        "measured_accuracy": 0.65
+        "measured_auc": 0.7477,
+        "measured_accuracy": 0.575
       },
       {
         "subset": "AUDIO+TEXT",
@@ -374,8 +374,8 @@
           "audio",
           "text"
         ],
-        "measured_auc": 0.8088,
-        "measured_accuracy": 0.625
+        "measured_auc": 0.6036,
+        "measured_accuracy": 0.55
       },
       {
         "subset": "IMAGE+TEXT",
@@ -384,8 +384,8 @@
           "image",
           "text"
         ],
-        "measured_auc": 0.7255,
-        "measured_accuracy": 0.525
+        "measured_auc": 0.4955,
+        "measured_accuracy": 0.45
       },
       {
         "subset": "AUDIO+IMAGE+VIDEO",
@@ -395,8 +395,8 @@
           "audio",
           "image"
         ],
-        "measured_auc": 0.951,
-        "measured_accuracy": 0.625
+        "measured_auc": 0.8288,
+        "measured_accuracy": 0.5
       },
       {
         "subset": "AUDIO+TEXT+VIDEO",
@@ -406,8 +406,8 @@
           "audio",
           "text"
         ],
-        "measured_auc": 0.9314,
-        "measured_accuracy": 0.45
+        "measured_auc": 0.6667,
+        "measured_accuracy": 0.475
       },
       {
         "subset": "IMAGE+TEXT+VIDEO",
@@ -417,8 +417,8 @@
           "image",
           "text"
         ],
-        "measured_auc": 0.8676,
-        "measured_accuracy": 0.375
+        "measured_auc": 0.5946,
+        "measured_accuracy": 0.45
       },
       {
         "subset": "AUDIO+IMAGE+TEXT",
@@ -428,8 +428,8 @@
           "image",
           "text"
         ],
-        "measured_auc": 0.8627,
-        "measured_accuracy": 0.375
+        "measured_auc": 0.7207,
+        "measured_accuracy": 0.475
       },
       {
         "subset": "AUDIO+IMAGE+TEXT+VIDEO",
@@ -440,8 +440,8 @@
           "image",
           "text"
         ],
-        "measured_auc": 0.951,
-        "measured_accuracy": 0.55
+        "measured_auc": 0.7658,
+        "measured_accuracy": 0.5
       }
     ]
   }

@@ -24,12 +24,13 @@ if PROJECT_ROOT not in sys.path:
 # Canonical 4 modalities
 ALL_MODALITIES = ['video', 'audio', 'image', 'text']
 
-# Base reliability weights derived from validation benchmarks
+# Base reliability weights calibrated against empirical validation performance:
+# Audio (0.30) and Image (0.30) anchor decisions; Video is rebalanced to 0.20 due to cross-manipulation transfer challenges under Protocol B; Text carries 0.20.
 BASE_WEIGHTS = {
-    'video': 0.35,
-    'audio': 0.25,
-    'image': 0.25,
-    'text': 0.15
+    'audio': 0.30,
+    'image': 0.30,
+    'video': 0.20,
+    'text': 0.20
 }
 
 

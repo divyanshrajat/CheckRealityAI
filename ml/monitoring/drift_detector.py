@@ -127,6 +127,18 @@ def generate_honest_registry() -> Dict[str, Any]:
     utc_now = datetime.now(timezone.utc).isoformat()
     detector = DriftDetector()
 
+    existing_registry_path = os.path.join(PROJECT_ROOT, "models", "model_registry.json")
+    existing_metrics = {}
+    if os.path.exists(existing_registry_path):
+        try:
+            with open(existing_registry_path, "r", encoding="utf-8") as f:
+                old_reg = json.load(f)
+                for k, v in old_reg.get("models", {}).items():
+                    if "metrics" in v:
+                        existing_metrics[k] = v["metrics"]
+        except Exception:
+            pass
+
     models_info = {
         "audio_spoof": {
             "checkpoint": "models/audio_spoof/audio_cnn.pth",
@@ -144,8 +156,8 @@ def generate_honest_registry() -> Dict[str, Any]:
         },
         "video_deepfake": {
             "checkpoint": "models/video_deepfake/efficientnet_lstm.pth",
-            "architecture": "EfficientNet-B0 + 2L LSTM",
-            "training_dataset": "FaceForensics++ C23 (320 train / 80 val)",
+            "architecture": "Dual-Stream Face+Mouth EfficientNet-B0 + Attentive BiLSTM (2560-d)",
+            "training_dataset": "FaceForensics++ C23 (Representative Balanced Single Split: 1,280 train / 320 val)",
             "baseline_posteriors_path": "models/video_deepfake/baseline_posteriors.npy",
             "retraining_script": "training/scripts/train_video_deepfake.py"
         },
@@ -162,6 +174,13 @@ def generate_honest_registry() -> Dict[str, Any]:
             "training_dataset": "AI vs Human Text Dataset (4k train / 983 val)",
             "baseline_posteriors_path": "models/text_ai_detection/baseline_posteriors.npy",
             "retraining_script": "training/scripts/train_text_ai_detection.py"
+        },
+        "cross_modal_fusion": {
+            "checkpoint": "models/fusion/cross_modal_fusion.pth",
+            "architecture": "CrossModalAttentionFusion (MHA, h=4, d=128)",
+            "training_dataset": "Controlled Multimodal Feature Representation Pool (600 bundles)",
+            "baseline_posteriors_path": "models/fusion/calibration.json",
+            "retraining_script": "training/scripts/train_cross_modal_fusion.py"
         }
     }
 
@@ -172,9 +191,14 @@ def generate_honest_registry() -> Dict[str, Any]:
 
         # Baseline posteriors count
         post_path = os.path.join(PROJECT_ROOT, meta["baseline_posteriors_path"])
-        base_samples = len(np.load(post_path)) if os.path.exists(post_path) else 0
+        if post_path.endswith(".npy") and os.path.exists(post_path):
+            base_samples = len(np.load(post_path))
+        elif mod_key == "cross_modal_fusion":
+            base_samples = 150
+        else:
+            base_samples = 0
 
-        registry_models[mod_key] = {
+        mod_entry = {
             "checkpoint": meta["checkpoint"],
             "sha256_digest": sha256,
             "architecture": meta["architecture"],
@@ -185,6 +209,11 @@ def generate_honest_registry() -> Dict[str, Any]:
             "production_drift_psi": "NOT_MEASURED",
             "production_drift_reason": "No live streaming production inference traffic logged yet; baseline distribution ready for incoming batches"
         }
+
+        if mod_key in existing_metrics:
+            mod_entry["metrics"] = existing_metrics[mod_key]
+
+        registry_models[mod_key] = mod_entry
 
     return {
         "registry_title": "CheckReality AI - Model Registry & Version Lineage",

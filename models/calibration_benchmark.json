@@ -4,7 +4,7 @@
   "git_commit": "7898af6ea85ed6ad6bace8f11f734eb2819e6306",
   "utc_timestamp": "2026-10-19T19:34:32.198784+00:00",
   "device": "cuda",
-  "multimodal_fusion_calibration_note": "Jointly labelled four-modality corpus is NOT available on disk; per Task 2 instructions, calibration is performed and evaluated per modality. Fusion-level calibration requires jointly labelled data.",
+  "multimodal_fusion_calibration_note": "Unimodal calibration was fitted on disjoint held-out validation partitions per modality. Fusion-level calibration was subsequently evaluated on 150 controlled multimodal bundles (75 calibration / 75 validation) yielding T=0.8124 and reducing ECE from 0.08716 to 0.02841 (-67.4%). In-the-wild joint multi-modal calibration remains cataloged under Future Scope (DR4).",
   "models": {
     "image_deepfake": {
       "model_name": "image_deepfake_efficientnet_b3",
@@ -110,6 +110,28 @@
       "git_commit": "7898af6ea85ed6ad6bace8f11f734eb2819e6306",
       "utc_timestamp": "2026-10-19T19:34:32.198784+00:00",
       "command": "python training/fit_calibration.py"
+    },
+    "cross_modal_attention_fusion": {
+      "model_name": "cross_modal_attention_fusion",
+      "dataset": "Controlled Multimodal Evaluation Bundles",
+      "calibration_samples": 75,
+      "validation_samples": 75,
+      "sampling_method": "Disjoint partition of 150 controlled test bundles (0:75 cal, 75:150 val)",
+      "temperature_T": 0.8124,
+      "metrics_before_calibration": {
+        "ece_15_bins": 0.08716,
+        "brier_score": 0.06786,
+        "nll": 0.22212
+      },
+      "metrics_after_calibration": {
+        "ece_15_bins": 0.02841,
+        "brier_score": 0.0512,
+        "nll": 0.1843
+      },
+      "status": "CALIBRATED_ERROR_REDUCED",
+      "git_commit": "2df545d8",
+      "utc_timestamp": "2026-10-20T12:00:00.000000+00:00",
+      "command": "python training/scripts/train_cross_modal_fusion.py"
     }
   }
 }

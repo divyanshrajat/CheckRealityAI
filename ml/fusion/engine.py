@@ -4,16 +4,16 @@ from typing import Dict, Any, List, Optional
 import numpy as np
 
 # Modality reliability weights prior to gating.
-# NOTE ON KNOWN ARCHITECTURAL LIMITATION (Documented in Paper & DR4):
-# Video carries a prior weight of 0.35 reflecting its role as the primary temporal stream in multimodal deepfakes.
-# However, on FaceForensics++ C23, video is empirically the weakest detector (AUC 0.8655 vs >0.999 for audio/image/text).
-# Carrying the largest fusion prior means video predictions can heavily influence the unified verdict unless
-# mitigated by dynamic certainty gating and discrepancy detection.
+# Calibrated against empirical validation performance:
+# Audio (99.60% Acc, 0.60% FPR) and Image (99.40% Acc, 0.50% FPR) serve as high-precision anchors with base priors of 0.30 each.
+# Video is calibrated to 0.20 (rebalanced from 0.35) reflecting that under Protocol B (FaceForensics++ C23 cross-dataset CV),
+# video is empirically the weakest detector (82.94% Acc, 40.70% FPR), preventing video false alarms from dominating multimodal fusion.
+# Text carries a base prior of 0.20. (Total sum = 1.00)
 MODALITY_RELIABILITY_WEIGHTS = {
-    'video': 0.35,
-    'audio': 0.25,
-    'image': 0.25,
-    'text': 0.15
+    'audio': 0.30,
+    'image': 0.30,
+    'video': 0.20,
+    'text': 0.20
 }
 
 def normalize_probability(raw_score: float) -> float:

@@ -436,51 +436,51 @@ const PERTURBATION_TESTS = [
 const COMPLIANCE_ITEMS = [
   {
     id: 'DR1',
-    title: 'Multi-Modal Detection Pipeline (Text, Image, Video, Audio)',
+    title: 'Uniform modality interface (G1)',
     status: 'Met',
-    details: 'Dedicated fine-tuned neural models for audio, image, video, and text with automated media extraction.'
+    details: 'Standardized adapter interface (ml/adapters/base.py, backend/app/inference.py) handling video, audio, image, and text with automated media extraction and uniform JSON schema.'
   },
   {
     id: 'DR2',
-    title: 'Cross-Modal Decision Fusion Core',
-    status: 'Met',
-    details: 'Bayesian reliability gating (unimodal priors) and trained Multi-Head Attention neural network (models/fusion/cross_modal_fusion.pth) with temperature calibration.'
+    title: 'Intermediate cross-modal attention fusion (G1, G2)',
+    status: 'Partly Met',
+    details: 'Multi-Head Cross-Attention neural network (models/fusion/cross_modal_fusion.pth) fusing 4 latent streams with key-padding mask; 90.00% Acc on 150 test bundles across 15 active subsets. Marked Partly Met because evidence relies on 600 synthetic bundles built from unrelated clips; authentic in-the-wild joint deepfake corpus in Future Scope.'
   },
   {
     id: 'DR3',
-    title: 'Explainable AI (XAI) Suite',
+    title: 'Modality gating and missing-modality semantics (G2, G4)',
     status: 'Met',
-    details: 'Mathematically derived Grad-CAM heatmaps, acoustic spectral energy saliency, temporal LSTM keyframe selection, and token-level gradient attribution.'
+    details: 'Convex Bayesian reliability gating (ml/fusion/gating.py) covering all 15 partial subsets with mathematically proven weight conservation; learned padding tokens handle missing streams.'
   },
   {
     id: 'DR4',
-    title: 'Forensic Video Streaming & Audio Demuxing',
-    status: 'Met',
-    details: 'HTTP 206 Partial Content range-request video streaming preserving original sound and instant seeking.'
+    title: 'Calibrated confidence (G5)',
+    status: 'Partly Met',
+    details: 'Per-modality temperature scaling fit via negative log-likelihood on validation sets; multimodal attention fusion calibrated with T=0.8124 (ECE reduced by 67.4% from 0.087 to 0.028). Marked Partly Met because fusion calibration is evaluated on 75 samples; large-scale joint in-the-wild calibration in Future Scope.'
   },
   {
     id: 'DR5',
-    title: 'Single-Page A4 Forensic Audit Certificate',
+    title: 'Two-layer explanation (G5)',
     status: 'Met',
-    details: 'Strict single-page print stylesheet formatted for formal intelligence and evidentiary dissemination.'
+    details: 'Layer 1 native unimodal explanations (Grad-CAM heatmaps, Mel-spectral energy saliency, token gradient attributions) paired with Layer 2 signed cross-modal attribution showing modality contribution deltas.'
   },
   {
     id: 'DR6',
-    title: 'Cross-Dataset Generalisation & Perturbation Stress Testing',
+    title: 'Cross-dataset evaluation as primary protocol (G3)',
     status: 'Partly Met',
-    details: 'Empirical stress tests completed for JPEG Q=50, 8kHz codec, 25% frame dropout, and 5% typo noise; external Celeb-DF v2 / ASVspoof 2021 DF corpora pending DUA.'
+    details: 'Empirical stress tests completed for JPEG Q=50, 8kHz telephony codec downsampling, 25% frame dropout, and 5% typo noise; external cross-corpora (Celeb-DF v2, FF++ C40, In-the-Wild, LIAR) cataloged in Future Scope.'
   },
   {
     id: 'DR7',
-    title: 'Empirical Latency, Parameter Count & Size Profiling',
+    title: 'Latency and size budgets (G6)',
     status: 'Met',
-    details: 'Benchmarked on physical NVIDIA GTX 1650 GPU and Intel CPU across 100 timed runs (benchmarks/latency_size_budget_report.json).'
+    details: 'Empirical P50, P95, P99 latencies, parameter counts, disk footprints, and peak memory profiled on physical NVIDIA GTX 1650 GPU and Intel CPU across 100 timed runs per detector and 10,000 fusion calls (benchmarks/latency_size_budget_report.json).'
   },
   {
     id: 'DR8',
-    title: 'Continuous Monitoring, Drift Detection & Retraining Triggers',
+    title: 'Retraining and versioning path (G7)',
     status: 'Partly Met',
-    details: 'PSI and Kolmogorov-Smirnov baseline posteriors established; live automated batch retraining pipeline waiting on production traffic.'
+    details: 'Baseline validation posteriors saved; two-sample Kolmogorov-Smirnov test and Population Stability Index (PSI) drift detector implemented with retraining queue logging (models/retraining_queue.log). Marked Partly Met pending live production traffic.'
   }
 ];
 
@@ -499,20 +499,20 @@ export default function Transparency() {
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 md:px-8 py-10 flex flex-col gap-10">
       
-      {/* 100% ORGANIC CERTIFICATION HERO BANNER */}
+      {/* FORENSIC ALGORITHM TRANSPARENCY & AUDIT HERO BANNER */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-primary/90 to-slate-900 p-8 md:p-10 text-white shadow-xl border border-primary/30">
         <div className="absolute top-0 right-0 -mt-10 -mr-10 w-72 h-72 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none"></div>
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex flex-col gap-3 text-center md:text-left">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold uppercase tracking-wider self-center md:self-start">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              100% Organic & Empirical Guarantee · Zero Synthetic / Fake Data
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/20 border border-cyan-400/30 text-cyan-200 text-xs font-bold uppercase tracking-wider self-center md:self-start">
+              <span className="material-symbols-outlined text-sm">verified</span>
+              Forensic Algorithm Transparency & Model Audit
             </div>
             <h1 className="font-headline-hero text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
-              Forensic Algorithm Transparency & Model Audit
+              Model Lineage & Empirical Benchmarks
             </h1>
             <p className="font-body-lg text-slate-200 max-w-2xl leading-relaxed">
-              Every metric in CheckReality AI is algebraically derived from integer confusion matrices evaluated on physical GPU hardware against held-out academic validation sets. Zero targeted or fabricated numbers.
+              Every unimodal metric in CheckReality AI is algebraically derived from integer confusion matrices evaluated on physical GPU hardware against held-out academic validation sets. Zero targeted or fabricated numbers.
             </p>
           </div>
 
@@ -613,7 +613,7 @@ export default function Transparency() {
                 Why does CheckReality AI document two distinct Video Deepfake protocols?
               </h3>
               <p className="text-xs text-slate-body max-w-2xl leading-relaxed">
-                CheckReality AI measures both a <strong>Representative Balanced Benchmark (1,600 videos)</strong> to evaluate temporal sequence modeling under equal class priors (99.69% Acc, 0.62% FPR), and the <strong>Full 3,500 Video Subject-Disjoint Cross-Dataset CV</strong> to test extreme cross-manipulation transfer across 5 synthesis families under severe imbalance (82.94% Acc, 40.70% FPR). Both protocols are 100% organic and derived from real confusion matrices.
+                CheckReality AI measures both a <strong>Representative Balanced Single Split (1,600 videos: 1,280 train / 320 val)</strong> to evaluate temporal sequence modeling under equal class priors (99.69% Acc, 0.62% FPR), and the <strong>Full 3,500 Video Subject-Disjoint Cross-Dataset CV</strong> to test extreme cross-manipulation transfer across 5 synthesis families under severe imbalance (82.94% Acc, 40.70% FPR). Both protocols are algebraically derived from real confusion matrices evaluated on physical hardware.
               </p>
             </div>
 
@@ -673,7 +673,7 @@ export default function Transparency() {
                       </span>
                       <span className="text-xs font-mono font-semibold text-slate-body flex items-center gap-1">
                         <span className="material-symbols-outlined text-[14px] text-emerald-500">check_circle</span>
-                        Verified Organic
+                        Empirically Verified
                       </span>
                     </div>
 
@@ -1094,26 +1094,29 @@ export default function Transparency() {
             </div>
             
             <div className="w-full h-5 rounded-full overflow-hidden flex shadow-inner">
-              <div className="bg-cyan-500 h-full text-white text-[10px] font-bold flex items-center justify-center" style={{ width: '35%' }} title="Video: 35%">
-                Video 35%
+              <div className="bg-emerald-500 h-full text-white text-[10px] font-bold flex items-center justify-center" style={{ width: '30%' }} title="Audio: 30%">
+                Audio 30%
               </div>
-              <div className="bg-emerald-500 h-full text-white text-[10px] font-bold flex items-center justify-center" style={{ width: '25%' }} title="Audio: 25%">
-                Audio 25%
+              <div className="bg-blue-500 h-full text-white text-[10px] font-bold flex items-center justify-center" style={{ width: '30%' }} title="Image: 30%">
+                Image 30%
               </div>
-              <div className="bg-blue-500 h-full text-white text-[10px] font-bold flex items-center justify-center" style={{ width: '25%' }} title="Image: 25%">
-                Image 25%
+              <div className="bg-cyan-500 h-full text-white text-[10px] font-bold flex items-center justify-center" style={{ width: '20%' }} title="Video: 20%">
+                Video 20%
               </div>
-              <div className="bg-purple-500 h-full text-white text-[10px] font-bold flex items-center justify-center" style={{ width: '15%' }} title="Text: 15%">
-                Text 15%
+              <div className="bg-purple-500 h-full text-white text-[10px] font-bold flex items-center justify-center" style={{ width: '20%' }} title="Text: 20%">
+                Text 20%
               </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-between text-xs text-slate-body pt-1 font-mono">
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-cyan-500"></span>Video (FaceForensics++ C23): 0.35</span>
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>Audio (ASVspoof 2019): 0.25</span>
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>Image (140k Faces): 0.25</span>
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-purple-500"></span>Text (News & Essays): 0.15</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>Audio (ASVspoof 2019): 0.30</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>Image (140k Faces): 0.30</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-cyan-500"></span>Video (FaceForensics++ C23): 0.20</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-purple-500"></span>Text (News & Essays): 0.20</span>
             </div>
+            <p className="text-[11px] text-slate-500 italic mt-0.5">
+              Empirical Rebalancing: Audio (99.60% Acc) and Image (99.40% Acc) serve as high-precision anchors (0.30 each). Video is assigned 0.20 (reduced from 0.35) reflecting cross-manipulation transfer challenges under Protocol B (40.70% FPR) so video false alarms do not dominate multimodal fusion. Text carries 0.20.
+            </p>
           </div>
 
           {/* Neural Cross-Modal Attention Network Card */}
@@ -1463,10 +1466,10 @@ export default function Transparency() {
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col gap-2">
               <div className="text-sm font-bold text-cyan-energy flex items-center gap-2">
                 <span className="material-symbols-outlined text-base">splitscreen</span>
-                Subject-Disjoint Splits
+                Partitioning Rigour
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">
-                FaceForensics++ video sequences and ASVspoof 2019 audio utterances are split by subject identity across train/validation splits, preventing facial or vocal memorization.
+                ASVspoof 2019 audio utterances and Video Protocol B are strictly partitioned by subject identity across folds. Video Protocol A is evaluated on a representative balanced single split (1,600 sequences: 1,280 train / 320 held-out val).
               </p>
             </div>
 
