@@ -49,10 +49,45 @@ export default function History() {
                 <span className="text-slate-body text-sm">{new Date(sub.created_at).toLocaleString()}</span>
               </Link>
               <div className="flex items-center gap-4">
-                <div className="flex gap-2">
-                  {sub.modalities.map(mod => (
-                    <span key={mod} className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs font-bold uppercase">{mod}</span>
-                  ))}
+                <div className="flex gap-1.5 flex-wrap">
+                  {(() => {
+                    const rawMods = sub.modalities || [];
+                    const setMods = new Set<string>();
+                    
+                    rawMods.forEach(m => {
+                      if (m !== 'multimodal') setMods.add(m.toLowerCase());
+                    });
+
+                    const hasAudio = sub.result?.inference?.audio_stream !== undefined ||
+                      sub.result?.inference?.audio !== undefined ||
+                      sub.result?.fusion?.modality_contributions?.audio !== undefined;
+                    
+                    const hasVideo = sub.result?.inference?.video !== undefined ||
+                      sub.result?.inference?.fake_probability !== undefined ||
+                      sub.result?.fusion?.modality_contributions?.video !== undefined;
+
+                    if (hasAudio) setMods.add('audio');
+                    if (hasVideo) setMods.add('video');
+
+                    if (setMods.size === 0) {
+                      rawMods.forEach(m => setMods.add(m));
+                    }
+
+                    return Array.from(setMods).map(mod => (
+                      <span 
+                        key={mod} 
+                        className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${
+                          mod === 'video' ? 'bg-blue-500/10 text-blue-600 border border-blue-500/20' :
+                          mod === 'audio' ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' :
+                          mod === 'image' ? 'bg-purple-500/10 text-purple-600 border border-purple-500/20' :
+                          mod === 'text' ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' :
+                          'bg-primary/10 text-primary'
+                        }`}
+                      >
+                        {mod}
+                      </span>
+                    ));
+                  })()}
                 </div>
                 <div className={`px-3 py-1 rounded-full text-xs font-bold ${sub.status === 'completed' ? 'bg-verdict-real/20 text-verdict-real' : sub.status === 'failed' ? 'bg-red-500/20 text-red-500' : 'bg-secondary/20 text-secondary'}`}>
                   {sub.status.toUpperCase()}

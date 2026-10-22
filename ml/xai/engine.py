@@ -332,17 +332,24 @@ def generate_audio_xai(audio_path: str, model: nn.Module, device: torch.device) 
         ext = audio_path.lower().split('.')[-1]
         if ext in ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv']:
             try:
-                from backend.app.inference import extract_audio_from_video
+                try:
+                    from app.inference import extract_audio_from_video
+                except ImportError:
+                    try:
+                        from backend.app.inference import extract_audio_from_video
+                    except ImportError:
+                        from inference import extract_audio_from_video
                 temp_extracted_wav = extract_audio_from_video(audio_path)
-                if not temp_extracted_wav:
-                    return {
-                        "xai_type": "Acoustic Saliency Analysis",
-                        "suspicious_timestamps": [],
-                        "note": "No audio stream found in video container"
-                    }
-                audio_path = temp_extracted_wav
             except Exception:
-                pass
+                temp_extracted_wav = None
+
+            if not temp_extracted_wav:
+                return {
+                    "xai_type": "Acoustic Saliency Analysis",
+                    "suspicious_timestamps": [],
+                    "note": "No audio stream found in video container"
+                }
+            audio_path = temp_extracted_wav
 
         try:
             import torchaudio

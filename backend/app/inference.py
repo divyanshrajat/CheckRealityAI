@@ -180,9 +180,11 @@ def extract_audio_from_video(video_path: str):
     return None
 
 def predict_audio(audio_path: str):
+    import time
+    t_start = time.time()
     temp_extracted_wav = None
     ext = audio_path.lower().split('.')[-1]
-    if ext in ['mp4', 'mov', 'avi', 'webm', 'mkv']:
+    if ext in ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv']:
         temp_extracted_wav = extract_audio_from_video(audio_path)
         if not temp_extracted_wav:
             return None  # Video has no audio stream
@@ -234,7 +236,19 @@ def predict_audio(audio_path: str):
             x = model.layer3(x)
             x = model.layer4(x)
             feat_512 = model.avgpool(x).flatten(1).cpu()
-        return {"spoof_probability": prob, "label": "Spoof/Fake" if prob > 0.5 else "Real/Bonafide", "_feature_vector": feat_512}
+
+        label = "Spoof/Fake" if prob > 0.5 else "Real/Bonafide"
+        confidence = prob if prob > 0.5 else (1.0 - prob)
+        elapsed_ms = round((time.time() - t_start) * 1000.0, 2)
+        return {
+            "spoof_probability": prob,
+            "label": label,
+            "confidence": confidence,
+            "threshold": 0.5,
+            "model_version": "resnet18_specaugment-v1.0",
+            "inference_ms": elapsed_ms,
+            "_feature_vector": feat_512
+        }
     finally:
         if temp_extracted_wav and os.path.exists(temp_extracted_wav):
             try:
@@ -538,7 +552,27 @@ def generate_xai_explanation(modality: str, file_path: str = None, text_content:
             
         elif modality == 'video' and file_path:
             vid_model = get_video_model()
-            return generate_video_gradcam(file_path, vid_model, device)
+            vid_xai = generate_video_gradcam(file_path, vid_model, device)
+            try:
+                aud_model = get_audio_model()
+                aud_xai = generate_audio_xai(audio_path=file_path, model=aud_model, device=device)
+            except Exception:
+                aud_xai = None
+                
+            if aud_xai and aud_xai.get("note") != "No audio stream found in video container" and "error" not in aud_xai:
+                return {
+                    "video": vid_xai,
+                    "audio": aud_xai,
+                    "xai_type": "Temporal Grad-CAM + Acoustic Mel Profiler",
+                    "heatmap_base64": vid_xai.get("heatmap_base64"),
+                    "suspicious_regions": vid_xai.get("suspicious_regions", []),
+                    "suspicious_timestamps": aud_xai.get("suspicious_timestamps", []),
+                    "peak_frame_time_sec": vid_xai.get("peak_frame_time_sec")
+                }
+            elif aud_xai and aud_xai.get("note") == "No audio stream found in video container":
+                vid_xai["audio"] = aud_xai
+                return vid_xai
+            return vid_xai
             
         elif modality == 'audio' and file_path:
             aud_model = get_audio_model()

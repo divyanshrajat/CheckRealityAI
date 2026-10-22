@@ -67,9 +67,27 @@ async def process_submission_background(submission_id: ObjectId, modality: str, 
             "xai": xai_result
         }
         
+        # Determine effective active modalities for UI badges and history
+        effective_modalities = [modality]
+        if modality == 'multimodal' and isinstance(inference_result, dict):
+            active_keys = [k for k in ['video', 'audio', 'image', 'text'] if k in inference_result]
+            if active_keys:
+                effective_modalities = active_keys
+        elif modality == 'video':
+            if isinstance(inference_result, dict) and 'audio_stream' in inference_result and isinstance(inference_result['audio_stream'], dict):
+                if 'spoof_probability' in inference_result['audio_stream']:
+                    effective_modalities = ['video', 'audio']
+
         await submissions_collection.update_one(
             {"_id": submission_id},
-            {"$set": {"status": "completed", "result": final_result, "updated_at": datetime.utcnow()}}
+            {
+                "$set": {
+                    "status": "completed",
+                    "modalities": effective_modalities,
+                    "result": final_result,
+                    "updated_at": datetime.utcnow()
+                }
+            }
         )
     except Exception as e:
         await submissions_collection.update_one(
