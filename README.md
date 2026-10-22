@@ -81,7 +81,9 @@ flowchart TD
 
   subgraph INFERENCE["2. SPECIALIZED NEURAL BACKBONES (CUDA)"]
     W -->|Image| M_IMG["EfficientNet-B3 (TTA)<br/>140k Faces Benchmark"]
-    W -->|Video| M_VID["EfficientNet-B0 + Attentive BiLSTM<br/>FaceForensics++ C23"]
+    W -->|Video| DEMUX["FFmpeg Demuxer<br/>Probe Audio Stream"]
+    DEMUX -->|Visual Frames| M_VID["EfficientNet-B0 + Attentive BiLSTM<br/>FaceForensics++ C23"]
+    DEMUX -->|Demuxed 16kHz PCM| M_AUD_V["ResNet-18 (SpecAugment)<br/>ASVspoof 2019 LA"]
     W -->|Audio| M_AUD["ResNet-18 (SpecAugment)<br/>ASVspoof 2019 LA"]
     W -->|Text| M_TXT["Dual RoBERTa-base<br/>Misinfo & AI Essay Detector"]
   end
@@ -89,12 +91,12 @@ flowchart TD
   subgraph XAI_LAYER["3. EXPLAINABLE AI (XAI) ENGINES"]
     M_IMG --> X_IMG["Visual Grad-CAM<br/>features[-1] Conv Saliency"]
     M_VID --> X_VID["Temporal Grad-CAM<br/>Peak Feature Variance Frame"]
-    M_AUD --> X_AUD["Acoustic Saliency<br/>Mel Spectral Gradient Profiler"]
+    M_AUD & M_AUD_V --> X_AUD["Acoustic Saliency<br/>Mel Spectral Gradient Profiler"]
     M_TXT --> X_TXT["Token Attribution<br/>Embedding Gradient Saliency"]
   end
 
   subgraph FUSION["4. MULTIMODAL FUSION & DECISION"]
-    M_IMG & M_VID & M_AUD & M_TXT --> F_ENG["Bayesian Multimodal Fusion Engine<br/>ml/fusion/engine.py"]
+    M_IMG & M_VID & M_AUD & M_AUD_V & M_TXT --> F_ENG["Bayesian Multimodal Fusion Engine<br/>ml/fusion/engine.py"]
     F_ENG --> AGR["Cross-Modal Agreement Index"]
     F_ENG --> RSK["Risk Severity Matrix (Low/Mod/High/Critical)"]
     F_ENG --> SYN["Forensic Synthesis Summary"]
@@ -130,6 +132,7 @@ CheckRealityAI/
 ├── Datasets/                 # Verified academic training corpuses (zero leakage)
 │   ├── audio/                # ASVspoof 2019 Logical Access (LA) protocols & FLAC samples
 │   ├── image/                # 140k Real & Fake Faces balanced subsets
+│   ├── multimodal_video_samples/ # 4 ready-to-test video clips with real/spoof audio tracks
 │   ├── text/                 # Sanitized Fake/True News & AI vs Human essay corpuses
 │   └── video/                # FaceForensics++ C23 compressed manipulation sequences
 ├── docs/                     # Academic & Engineering Specification Documents
@@ -229,6 +232,7 @@ Every model in CheckReality AI is fine-tuned on verified public academic dataset
 - **Temporal Modeling**: Samples 16 uniformly spaced keyframes across video duration, encoding dual-stream feature vectors (`[16, 2560]`) with soft temporal attention pooling to dynamically weight subtle localized manipulation spikes across the sequence.
 - **Dataset**: FaceForensics++ C23 compressed benchmark across all 5 manipulation families (`Deepfakes`, `Face2Face`, `FaceSwap`, `FaceShifter`, `NeuralTextures`). Evaluated on the representative balanced benchmark of 1,600 video sequences (1,280 train / 320 val).
 - **Evaluation Protocol & Empirical Performance**: Empirically measured with **99.69% Accuracy**, **1.0000 ROC-AUC**, **0.9938 Precision**, **1.0000 Recall**, **0.62% False Positive Rate (FPR)**, **0.00% False Negative Rate (FNR)**, and **0.9969 F1-score** ([`models/video_deepfake/metrics.json`](models/video_deepfake/metrics.json)), directly derived from confusion matrix [[159, 1], [0, 160]] on FaceForensics++ C23.
+- **Audio Demuxing in Video Containers**: While standard academic FaceForensics++ C23 sequences are silent, cropped facial video streams (`Stream #0:0: Video: h264` only), in-the-wild videos frequently contain synchronized speech. When video containers (`.mp4`, `.webm`, `.mov`, `.avi`) are ingested, FFmpeg automatically probes for an acoustic stream. If present, the audio track is extracted in real time into uncompressed 16kHz mono PCM and passed to the fine-tuned ResNet-18 detector, automatically upgrading the submission to a dual-stream analysis (`['video', 'audio']`). Silent benchmark clips gracefully execute the visual pipeline without error.
 - **Artifact**: [`models/video_deepfake/efficientnet_lstm.pth`](models/video_deepfake/efficientnet_lstm.pth) (23.6 MB, SHA256: `5e65a55c...`).
 
 ---
@@ -315,12 +319,17 @@ Rather than relying solely on raw probabilities, forensic threat tiers integrate
 | 🟢 **LOW / AUTHENTIC** | $< 40\%$ | Any | Consistent authentic biometric & semantic characteristics |
 
 #### 7. Dual-Stream Video Decomposition & Automated Acoustic Extraction
-When evaluating video content (under either `modality=video` or `modality=multimodal`), real-world attacks frequently manipulate only a single channel (e.g. authentic speech paired with an AI-generated face swap, or authentic broadcast video spliced with an acoustic voice clone).
+When evaluating video content (under either `modality=video` or `modality=multimodal`), real-world deepfakes frequently manipulate only a single stream — such as an authentic speech track paired with an AI-generated face swap (visual deepfake), or authentic video footage spliced with a cloned synthetic voice (acoustic deepfake).
 
-CheckReality AI implements **Automated Dual-Stream Cross-Modal Decomposition**:
-1. **Visual Frame Analysis**: 16 uniformly sampled frames across the video timeline are fed to the `EfficientNet-B0 + 2L LSTM` pipeline to capture spatial boundary artifacts and inter-frame temporal inconsistencies ($p_{\text{video}}$).
-2. **Acoustic Demuxing & Extraction**: The video container (MP4, WebM, MOV, AVI, MKV) is automatically probed for audio streams. If detected, the acoustic track is extracted in real time into uncompressed 16kHz mono PCM (`pcm_s16le`) via bundled FFmpeg utilities and routed to the `ResNet-18 Log-Mel Spectrogram` spoofing classifier ($p_{\text{audio}}$).
-3. **Synchronous Bayesian Fusion**: Both visual and acoustic probabilities are fed into the Bayesian Multimodal Fusion Engine. If streams diverge (e.g. authentic video with cloned audio), the Cross-Modal Agreement Index drops, triggering a targeted **`HIGH (DISCREPANCY DETECTED)`** warning.
+CheckReality AI implements **Automated Dual-Stream Cross-Modal Ingestion & Decomposition**:
+1. **Container Probing & Audio Demuxing**: When any video container (`.mp4`, `.webm`, `.mov`, `.avi`, `.mkv`) is uploaded, backend inference probes the container using FFmpeg utilities:
+   - **Silent Video Containers**: If no audio stream exists (e.g. standard academic FaceForensics++ C23 cropped face benchmarks), the system gracefully skips audio processing without throwing exceptions or generating spurious priors. Modality remains pure `['video']`, and the UI displays `VIDEO ONLY (NO AUDIO TRACK)`.
+   - **Multimodal Video Containers**: If an audio stream is detected, it is extracted on-the-fly into uncompressed 16 kHz mono PCM (`pcm_s16le`) via `extract_audio_from_video`. The backend automatically updates the submission's registered modalities in MongoDB to **`['video', 'audio']`**, passing the demuxed audio to the fine-tuned `ResNet-18 Log-Mel Spectrogram` detector.
+2. **Visual Temporal Analysis**: 16 uniformly sampled frames across the video timeline are passed to the `EfficientNet-B0 + 2L Attentive BiLSTM` pipeline to capture spatial boundary artifacts and inter-frame temporal inconsistencies ($p_{\text{video}}$).
+3. **Synchronous Bayesian & Neural Fusion**: Both visual ($p_{\text{video}}$) and acoustic ($p_{\text{audio}}$) probabilities are fed into the Bayesian Multimodal Fusion Engine. When streams diverge (e.g. authentic video with cloned audio), the Cross-Modal Agreement Index drops, triggering a targeted **`HIGH (DISCREPANCY DETECTED)`** risk severity tier.
+4. **Dual-Stream Explainable AI (XAI) Generation**: When a video contains audio, the XAI engine automatically synthesizes both visual and acoustic explanations:
+   - **Visual Temporal Grad-CAM**: Backpropagated convolutional gradients on the peak feature-variance frame localize facial blending seams, eye warping, and border irregularities.
+   - **Acoustic Mel-Spectrogram Saliency**: Frequency gradient profiling across 128 Mel bins localizes millisecond temporal distortion windows flagging vocoder phase discontinuities, spectral smearing, and synthetic speech synthesis artifacts.
 
 #### 8. Trained Intermediate Cross-Modal Attention Network (`models/fusion/cross_modal_fusion.pth`)
 In addition to late Bayesian decision fusion, CheckReality AI includes a dedicated, fully trained intermediate representation fusion model (`CrossModalAttentionFusion`, [`ml/fusion/attention.py`](ml/fusion/attention.py)):
@@ -446,13 +455,29 @@ curl -X POST "http://localhost:8001/submissions/" \
   -F "file=@sample_face.jpg"
 ```
 
-#### 2. Analyze a Video (Spatial-Temporal Analysis)
+#### 2. Analyze a Video (Spatial-Temporal & Automated Audio Demuxing)
 ```bash
 curl -X POST "http://localhost:8001/submissions/" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -F "modality=video" \
   -F "file=@interview_clip.mp4"
 ```
+> **Automatic Dual-Modality Registration**: If `interview_clip.mp4` contains an audio track, the backend extracts the 16kHz audio stream, executes ResNet-18 audio spoofing analysis alongside EfficientNet-B0+BiLSTM video deepfake detection, and dynamically records `modalities: ["video", "audio"]` in the report:
+> ```json
+> {
+>   "submission_id": "6ada037821b22f9c3ed26034",
+>   "status": "completed",
+>   "modalities": ["video", "audio"],
+>   "unified_verdict": "Fake",
+>   "calibrated_confidence": 0.9998,
+>   "risk_severity": "CRITICAL",
+>   "results": {
+>     "video": { "fake_probability": 0.9775, "label": "Fake", "confidence": 0.9775 },
+>     "audio": { "spoof_probability": 0.9999, "label": "Spoof/Fake", "confidence": 0.9999 }
+>   }
+> }
+> ```
+> If the video is silent (e.g. academic FaceForensics++ benchmark crops), `modalities: ["video"]` is retained with pure visual temporal analysis.
 
 #### 3. Analyze Audio for Voice Cloning
 ```bash
@@ -505,18 +530,19 @@ CheckReality AI provides a dual-layer reporting architecture: a high-density, re
 The React 18 user interface is built around high-density forensic analysis and instant visual-acoustic playback:
 
 1. **Forensic Verdict Card**: Displays the unified Bayesian credibility verdict (`REAL` or `FAKE`), calibrated manipulation probability percentage, dynamic Risk Severity Tier (`LOW`, `MODERATE`, `HIGH`, `CRITICAL`), and Cross-Modal Agreement score.
-2. **Zero-Silence Forensic Media Player (`ForensicMediaPlayer.tsx`)**:
-   - High-fidelity HTML5 video & audio player with active sound preservation (`muted = false`, 100% initial volume).
-   - Real-time acoustic stream telemetry (`• Audio Track Active (Sound Enabled)`).
-   - Manual volume sliders, full-screen playback, and one-click browser autoplay policy unmute recovery.
+2. **Audio Track Stream Indicator & Forensic Player (`ForensicMediaPlayer.tsx`)**:
+   - Dynamic track status telemetry badge: `VIDEO + DEMUXED AUDIO (DUAL STREAM)` with active frequency wave animation when audio is present, vs. `VIDEO ONLY (NO AUDIO TRACK)` for silent benchmark clips.
+   - High-fidelity HTML5 video & audio player with active sound preservation (`muted = false`, 100% initial volume), volume sliders, and full-screen controls.
    - Powered by backend **HTTP 206 Partial Content byte-range streaming** for instantaneous timeline scrubbing and synchronized visual-acoustic alignment.
 3. **Forensic Synthesis Engine**: Generates human-interpretable forensic commentary summarizing cross-stream agreements or divergence (e.g. highlighting face-swapped visuals spliced onto authentic audio).
-4. **Multimodal Probability Breakdown Grid**: Displays individual discriminative scores across Video, Audio, Image, and Text streams with calibrated visual progress indicators.
+4. **Multi-Modal Probability Breakdown Grid**: Displays dedicated diagnostic cards for every active stream — including separate, independent cards for **Video Deepfake (B0+BiLSTM)** and **Demuxed Audio Spoofing (ResNet-18)** with model versions, inference latency (ms), decision thresholds ($\tau = 0.50$), and confidence meters.
 5. **Interactive Explainable AI (XAI) Suite**:
-   - **Visual Grad-CAM Viewer**: Interactive side-by-side inspection comparing original video frames/images against gradient-weighted class activation heatmaps (`features[-1]`), revealing synthetic blending seams around facial landmarks.
+   - **Dual Visual + Acoustic Saliency (for Video with Sound)**: Simultaneously displays the **Visual Grad-CAM Viewer** (highlighting facial manipulation seams) alongside the **Acoustic Timeline Inspector** (localizing vocoder glitch timestamps and synthetic modulation spikes).
+   - **Visual Grad-CAM Viewer**: Interactive side-by-side inspection comparing original video frames/images against gradient-weighted class activation heatmaps (`features[-1]`).
    - **Acoustic Timeline Inspector**: Millisecond-level temporal distortion windows highlighting phase anomalies, synthetic vocoder glitches, and artificial spectral cutoffs.
    - **Token Saliency Highlighting**: Gradient-based token attribution highlighting lexical patterns driving misinformation and synthetic text classification.
-6. **In-Browser Certificate Preview Modal (`Preview PDF`)**: Inspect the exact rendered A4 certificate within a full-screen modal before printing or archiving.
+6. **Unified Forensic History Feed (`History.tsx`)**: Renders distinct color-coded modality pills (`VIDEO` in blue, `AUDIO` in amber) for dual-stream submissions, allowing examiners to immediately distinguish multimodal video files from silent video-only clips.
+7. **In-Browser Certificate Preview Modal (`Preview PDF`)**: Inspect the exact rendered A4 certificate within a full-screen modal before printing or archiving.
 
 ---
 
@@ -532,17 +558,18 @@ To satisfy rigorous digital evidence and academic submission standards, CheckRea
 
 </div>
 
-#### Dynamic 4-Modality Certificate Adaptation
+#### Dynamic Modality Certificate Adaptation
 
-The certificate automatically detects the submitted media type and dynamically adapts its diagnostic metrics, metadata profile, and Explainable AI (XAI) panels across all four supported modules:
+The certificate automatically detects the submitted media type and dynamically adapts its diagnostic metrics, metadata profile, and Explainable AI (XAI) panels across all supported configurations:
 
 | Modality | Audit Header Badge | Specialized Diagnostic Matrix | Explainable AI (XAI) Localization Panel |
 |---|---|---|---|
-| **Video** | `SPATIAL-TEMPORAL VIDEO AUDIT` | Face-Swap Score, BiLSTM Temporal Stability, Demuxed Audio Check, C23 Robustness | Peak Frame Grad-CAM Heatmap + Spatial Boundary Blending Seam Coordinates |
+| **Video (with Demuxed Audio)** | `SPATIAL-TEMPORAL VIDEO & DEMUXED AUDIO AUDIT` | Video Deepfake % (B0+BiLSTM), Demuxed Voice Spoof % (ResNet-18), C23 Robustness, Cross-Modal Agreement | Peak Frame Grad-CAM Heatmap + Acoustic Spectral Glitch Timestamps & Findings |
+| **Video (Silent / Video-Only)** | `SPATIAL-TEMPORAL VIDEO AUDIT` | Face-Swap Score, BiLSTM Temporal Stability, C23 Robustness, Frame Consistency | Peak Frame Grad-CAM Heatmap + Spatial Boundary Blending Seam Coordinates |
 | **Audio** | `ACOUSTIC FORENSIC AUDIT` | Voice Spoof/Clone %, Bonafide Purity %, SpecAugment Coherence, Vocoder Phase Sync | Log-Mel Spectrogram Waveform + Pitch Discontinuity & Vocoder Glitch Timestamps |
 | **Image** | `FACIAL IMAGE FORENSIC AUDIT` | Manipulation Score, Biological Skin Coherence, Seam Boundary, Sensor PRNU Pattern | High-Resolution Spatial Grad-CAM Heatmap + Facial Landmark Blending Artifacts |
 | **Text** | `TEXTUAL MISINFORMATION AUDIT` | Misinformation Risk %, AI Generation Likelihood %, Perplexity/Burstiness, Factuality | Salient Semantic Token Highlights with Gradient Attribution Weights & Excerpt |
-| **Multimodal** | `MULTIMODAL FUSION AUDIT` | Full Bayesian Matrix (Video: 35%, Audio: 25%, Image: 25%, Text: 15%) + Agreement | Multi-Stream Correlation: Visual Saliency + Acoustic Timestamps + Tokens |
+| **Multimodal** | `MULTIMODAL FUSION AUDIT` | Full Bayesian Matrix (Video: 20%, Audio: 30%, Image: 30%, Text: 20%) + Agreement | Multi-Stream Correlation: Visual Saliency + Acoustic Timestamps + Tokens |
 
 #### Key Engineering Features of the Certificate:
 - **Strict Single-Page A4 Layout**: Tailored `@media print` styling (`@page { size: A4 portrait; margin: 8mm 10mm; }`) with `page-break-inside: avoid;` and compact typography ensures the entire certificate prints cleanly onto **exactly 1 page** without trailing blank sheets.
@@ -631,6 +658,25 @@ INTEGRATION TEST SUMMARY: 5/5 SUITES PASSED
   ✓ built in 2.15s
   ```
 
+### Multimodal Video Verification Suite (`Datasets/multimodal_video_samples/`)
+
+To validate real-world multimedia containers with synchronized audio and visual streams, the repository bundles a 4-class permutation test suite under [`Datasets/multimodal_video_samples/`](Datasets/multimodal_video_samples/):
+
+| Test Video Asset | Visual Modality | Acoustic Modality | Expected Detection & Forensic Behavior |
+|---|---|---|---|
+| `sample_real_video_real_audio.mp4` | Authentic Face Crop | Bonafide Speech | **LOW RISK / AUTHENTIC** — High cross-modal agreement; near-zero manipulation probabilities across both streams. |
+| `sample_real_video_spoof_audio.mp4` | Authentic Face Crop | Synthetic Voice Clone | **HIGH (DISCREPANCY DETECTED)** — Audio flagged as spoof, visual confirmed authentic; triggers targeted acoustic dubbing alert. |
+| `sample_fake_video_real_audio.mp4` | Deepfake Face Swap | Bonafide Speech | **HIGH (DISCREPANCY DETECTED)** — Visual flagged as manipulated, speech confirmed authentic; triggers visual facial swap alert. |
+| `sample_fake_video_spoof_audio.mp4` | Deepfake Face Swap | Synthetic Voice Clone | **CRITICAL RISK** — High-confidence synthetic markers detected across both visual frames and acoustic frequencies; unified verdict FAKE. |
+
+```bash
+# Test live dual-stream video ingestion with audio demuxing
+curl -X POST "http://localhost:8001/submissions/" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -F "modality=video" \
+  -F "file=@Datasets/multimodal_video_samples/sample_fake_video_spoof_audio.mp4"
+```
+
 ---
 
 ## 10. Research Compliance & Design Requirements Status (DR1–DR8)
@@ -656,9 +702,9 @@ The table below documents the empirically measured compliance status of CheckRea
 CheckReality AI is a production-ready, fully verified multimodal forensic framework with live inference, explainable visualizations, multi-modal Bayesian fusion, and a production dashboard. Specialized neural detectors achieve verified empirical benchmarks across all modalities: Audio Spoofing (99.60% Acc, 0.9999 AUC), Image Deepfakes (99.40% Acc, 0.9998 AUC), Text Misinformation (99.95% Acc, 1.0000 AUC), AI Essay Detection (100.0% Acc, 1.0000 AUC), and Compressed Video Deepfake Detection (99.69% Acc, 1.0000 ROC-AUC, 0.62% FPR on representative balanced FaceForensics++ C23 benchmark). Cross-modal attention fusion achieves 90.00% accuracy, 0.8718 F1-score, and 0.9473 ROC-AUC on 150 held-out multimodal test bundles.
 ### Operational Limitations
 - **Face Resolution & Centering**: Video deepfake detection relies on spatial center-face crops to isolate facial blending boundaries from background macroblock noise. Sequences where the face is heavily occluded or smaller than $40 \times 40$ pixels may exhibit reduced confidence.
+- **Silent Video Containers**: Video files lacking an audio stream (such as standard FaceForensics++ C23 benchmark clips) bypass acoustic classification and execute purely on spatial-temporal visual features. Multimodal fusion requires multimedia files with active sound tracks.
 - **Language Scope**: Text misinformation and AI essay detection models currently evaluate **English-language** texts only.
 - **Short Audio Samples**: Audio spoof detection requires a minimum of 0.5 seconds of voiced speech to build an informative Mel-spectrogram.
-- **Extremely Low-Resolution Faces**: Facial deepfake detection degrades on faces smaller than $40 \times 40$ pixels.
 
 ### Explicitly Out of Scope
 - **Court-Admissible Legal Certification**: The framework provides decision-support metrics, not legal guarantees.
